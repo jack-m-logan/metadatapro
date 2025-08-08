@@ -1,0 +1,6 @@
+echo "Husky ===> 🧪 Executing EsLint ..."
+yarn lint
+echo "Husky ===> 🎉 Lint fix complete! "
+echo "Husky ===> 🧪 Executing test:coverage ..."
+yarn test:coverage
+echo "Husky ===> 🎉 Pushing to git successfully - thank you for contributing!"
