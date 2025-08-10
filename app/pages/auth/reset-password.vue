@@ -119,7 +119,7 @@ const handlePasswordUpdate = async () => {
     } else {
       successMessage.value = 'Password updated successfully! Redirecting...'
       setTimeout(() => {
-        navigateTo('/dashboard-view')
+        navigateTo('/dashboard')
       }, 2000)
     }
   } catch (err) {

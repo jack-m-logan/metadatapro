@@ -151,7 +151,7 @@ const successMessage = ref('')
 // redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-    navigateTo('/dashboard-view')
+    navigateTo('/dashboard')
   }
 })
 

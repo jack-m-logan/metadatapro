@@ -177,7 +177,7 @@ const user = useSupabaseUser()
 
 watchEffect(() => {
   if (user.value) {
-    navigateTo('/dashboard-view')
+    navigateTo('/dashboard')
   }
 })
 </script>

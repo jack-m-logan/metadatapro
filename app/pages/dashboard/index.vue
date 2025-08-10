@@ -71,7 +71,7 @@
               Upload your audio files to validate metadata for SGAE, AIE, and AGEDI registration.
             </p>
             <NuxtLink
-              to="/validate"
+              to="/dashboard/validate-metadata"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Start Validation
@@ -164,7 +164,7 @@
               class="px-4 py-5 text-center text-gray-500"
             >
               No validations yet. <NuxtLink
-                to="/validate"
+                to="/dashboard/validate-metadata"
                 class="text-indigo-600 hover:text-indigo-500"
               >
                 Upload your first track!
@@ -217,6 +217,7 @@
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 
+const isLoading = ref(false)
 const userProfile = ref(null)
 const stats = ref({
   tracksValidated: 0,
@@ -224,6 +225,34 @@ const stats = ref({
   reportsGenerated: 0
 })
 const recentTracks = ref([])
+
+const fetchUserData = async () => {
+  try {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.value.id)
+      .single()
+
+    userProfile.value = profile
+
+    const { data: tracks } = await supabase
+      .from('tracks')
+      .select('*')
+      .eq('user_id', user.value.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    recentTracks.value = tracks || []
+
+    stats.value.tracksValidated = tracks?.length || 0
+    stats.value.issuesFixed = 0
+    stats.value.reportsGenerated = 0
+
+  } catch (error) {
+    console.error('Error fetching user data:', error)
+  }
+}
 
 watch(user, async (newUser) => {
   if (newUser) {
@@ -234,39 +263,9 @@ watch(user, async (newUser) => {
 // auth check - redirect if not authenticated
 watchEffect(() => {
   if (user.value === null) {
-    navigateTo('auth/user-login')
+    navigateTo('/auth/user-login')
   }
 })
-
-const fetchUserData = async () => {
-  try {
-    // get profile
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.value.id)
-      .single()
-    
-    userProfile.value = profile
-
-    const { data: tracks } = await supabase
-      .from('tracks')
-      .select('*')
-      .eq('user_id', user.value.id)
-      .order('created_at', { ascending: false })
-      .limit(5)
-    
-    recentTracks.value = tracks || []
-    
-    stats.value.tracksValidated = tracks?.length || 0
-    // TODO: Calculate real stats from validation_issues table
-    stats.value.issuesFixed = 0
-    stats.value.reportsGenerated = 0
-    
-  } catch (error) {
-    console.error('Error fetching user data:', error)
-  }
-}
 
 const handleSignOut = async () => {
   try {

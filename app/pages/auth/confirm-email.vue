@@ -69,7 +69,7 @@
           
           <div class="mt-6">
             <NuxtLink
-              to="/dashboard-view"
+              to="/dashboard"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Go to Dashboard
@@ -159,7 +159,7 @@ onMounted(async () => {
       
       // redirect to dashboard after 2 seconds
       setTimeout(() => {
-        navigateTo('/dashboard-view')
+        navigateTo('/dashboard')
       }, 2000)
     }
 

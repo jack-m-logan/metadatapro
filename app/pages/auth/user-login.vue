@@ -108,7 +108,7 @@ const errorMessage = ref('')
 // redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-    navigateTo('/dashboard-view')
+    navigateTo('/dashboard')
   }
 })
 
@@ -126,7 +126,7 @@ const handleSignIn = async () => {
       errorMessage.value = error.message
     } else {
       // success - redirected by auth state change
-      await navigateTo('/dashboard-view')
+      await navigateTo('/dashboard')
     }
   } catch (err) {
     errorMessage.value = 'An unexpected error occurred'
