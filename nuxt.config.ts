@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   app: {
     baseURL: process.env.BASE_URL,
     head: {
-      title: 'Nuxt 4 starter',
+      title: 'metaPRO',
       link: [
         {
           rel: 'icon',
@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt',
     '@nuxt/devtools',
+    '@nuxtjs/supabase'
   ],
 
   css: [
@@ -64,6 +65,21 @@ export default defineNuxtConfig({
   devServer: {
     port: 8080,
     host: 'localhost',
+  },
+
+  supabase: {
+    redirectOptions: {
+      login: '/auth/user-login',
+      callback: '/auth/confirm-email',
+      exclude: ['/', '/auth/user-login', '/auth/user-signup', '/auth/confirm-email', '/auth/forgot-password', '/auth/reset-password']
+    }
+  },
+
+  runtimeConfig: {
+    public: {
+      supabaseUrl: process.env.SUPABASE_URL || '',
+      supabaseKey: process.env.SUPABASE_KEY || '',
+    }
   },
 
   compatibilityDate: '2024-12-05',
