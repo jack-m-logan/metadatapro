@@ -8,14 +8,14 @@ export const useFileUpload = () => {
   const validateAudioFile = (file: File) => {
     const allowedTypes = [
       'audio/mpeg',
-      'audio/wav',        
+      'audio/wav',
       'audio/flac',
       'audio/mp4',
       'audio/x-m4a',
-      'audio/aac'        
+      'audio/aac'
     ]
     
-    const maxSize = 50 * 1024 * 1024
+    const maxSize = 50 * 1024 * 1024 // 50MB
     
     if (!allowedTypes.includes(file.type)) {
       throw new Error(`Invalid file type: ${file.type}. Please upload MP3, WAV, FLAC, or M4A files.`)
@@ -32,6 +32,24 @@ export const useFileUpload = () => {
     return true
   }
   
+const ensureUserProfile = async (userId: string) => {
+  const { data: profile, error } = await supabase
+    .from('user_profiles')
+    .select('id')
+    .eq('id', userId)
+    .single()
+  
+  if (error) {
+    if (error.code === 'PGRST116') {
+      console.error('User profile missing for authenticated user. This suggests the signup trigger failed.')
+      throw new Error('User profile not found. Please contact support or try logging out and back in.')
+    }
+    throw new Error(`Error accessing user profile: ${error.message}`)
+  }
+  
+  return profile
+}
+  
   const uploadAudioFile = async (file: File) => {
     try {
       isUploading.value = true
@@ -40,9 +58,12 @@ export const useFileUpload = () => {
       if (!user.value) {
         throw new Error('You must be logged in to upload files')
       }
+            
+      await ensureUserProfile(user.value.id)
       
       validateAudioFile(file)
       
+      // unique file name based on user id and timestamp
       const fileExt = file.name.split('.').pop()
       const fileName = `${user.value.id}/${Date.now()}_${crypto.randomUUID()}.${fileExt}`
       
@@ -64,11 +85,11 @@ export const useFileUpload = () => {
         .from('tracks')
         .insert({
           user_id: user.value.id,
-          title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+          filename: file.name.replace(/\.[^/.]+$/, ""), // remove file extension
           file_path: uploadData.path,
           file_size: file.size,
-          file_type: file.type,
-          processing_status: 'uploaded'
+          file_format: fileExt,
+          validation_status: 'pending'
         })
         .select()
         .single()
