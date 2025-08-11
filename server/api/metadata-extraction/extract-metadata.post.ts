@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
       skipCovers: false, // We want artwork info
       skipPostHeaders: true // Skip unnecessary data for performance
     })
-    
+
     const extractedMetadata = {
       // Basic track info
       title: metadata.common.title || null,
@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
       // Technical specs
       sample_rate: metadata.format.sampleRate || null,
       bit_depth: metadata.format.bitsPerSample || null,
-      bitrate: metadata.format.bitrate || null,
+      bitrate: metadata.format.bitrate ? Math.round(metadata.format.bitrate) : null,
       codec: metadata.format.codec || null,
       container: metadata.format.container || null,
       lossless: metadata.format.lossless || false,
@@ -100,8 +100,7 @@ export default defineEventHandler(async (event) => {
       raw_common: JSON.stringify(metadata.common).slice(0, 2000),
       raw_format: JSON.stringify(metadata.format).slice(0, 1000)
     }
-    
-    // Update track record with extracted metadata
+
     const { error: updateError } = await supabase
       .from('tracks')
       .update({ 
