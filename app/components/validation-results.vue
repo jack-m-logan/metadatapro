@@ -13,6 +13,7 @@
             </p>
           </div>
           <button
+            v-if="showBackButton"
             class="text-sm text-indigo-600 hover:text-indigo-500"
             @click="$emit('back-to-upload')"
           >
@@ -45,9 +46,40 @@
             {{ getScoreText(results.validationScore || 0) }}
           </div>
         </div>
+
+        <!-- Revenue Impact Message -->
+        <div 
+          v-if="results.validationScore < 80"
+          class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md"
+        >
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg
+                class="h-5 w-5 text-yellow-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">
+                Revenue Impact Warning
+              </h3>
+              <p class="text-sm text-yellow-700 mt-1">
+                {{ getRevenueImpactMessage(results.validationScore, results.issues) }}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Track Information -->
     <div class="bg-white shadow rounded-lg mb-6">
       <div class="px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-medium text-gray-900">
@@ -62,6 +94,10 @@
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
               {{ results.metadata?.title || 'Not detected' }}
+              <span
+                v-if="!results.metadata?.title"
+                class="text-red-600 ml-2"
+              >⚠ Required for distribution</span>
             </dd>
           </div>
           <div>
@@ -70,6 +106,10 @@
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
               {{ results.metadata?.artist || 'Not detected' }}
+              <span
+                v-if="!results.metadata?.artist"
+                class="text-red-600 ml-2"
+              >⚠ Required for distribution</span>
             </dd>
           </div>
           <div>
@@ -94,6 +134,10 @@
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
               {{ results.metadata?.sample_rate ? `${results.metadata.sample_rate} Hz` : 'Unknown' }}
+              <span
+                v-if="results.metadata?.sample_rate && results.metadata.sample_rate < 44100"
+                class="text-yellow-600 ml-2"
+              >⚠ Low quality</span>
             </dd>
           </div>
           <div>
@@ -102,12 +146,17 @@
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
               {{ results.metadata?.isrc || 'Not found' }}
+              <span
+                v-if="!results.metadata?.isrc"
+                class="text-blue-600 ml-2"
+              >💰 Missing radio royalties</span>
             </dd>
           </div>
         </dl>
       </div>
     </div>
 
+    <!-- Issues Found -->
     <div class="bg-white shadow rounded-lg mb-6">
       <div class="px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-medium text-gray-900">
@@ -122,7 +171,7 @@
           <div class="text-4xl mb-2">
             ✅
           </div>
-          <p>No issues found! Your track looks good.</p>
+          <p>No issues found! Your track looks good for distribution.</p>
         </div>
         
         <div 
@@ -152,13 +201,26 @@
               >
                 💡 {{ issue.suggestion }}
               </p>
+              <!-- Correction CTA for fixable issues -->
+              <div 
+                v-if="isFixableIssue(issue.issue_code)"
+                class="mt-3 p-2 bg-green-50 border border-green-200 rounded"
+              >
+                <p class="text-sm text-green-800">
+                  🔧 This can be fixed automatically for €0.99
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-white shadow rounded-lg">
+    <!-- Action Buttons -->
+    <div
+      v-if="showBackButton"
+      class="bg-white shadow rounded-lg"
+    >
       <div class="px-6 py-4">
         <div class="flex space-x-4">
           <button
@@ -184,6 +246,10 @@ const props = defineProps({
   results: {
     type: Object,
     required: true
+  },
+  showBackButton: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -236,8 +302,34 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
+const getRevenueImpactMessage = (score, issues) => {
+  const missingISRC = issues?.some(i => i.issue_code === 'missing_isrc')
+  const criticalIssues = issues?.filter(i => i.severity === 'critical').length || 0
+  
+  if (missingISRC) {
+    return 'Missing ISRC could cost you €50-200 per month in radio royalties. Generate one instantly with Pro.'
+  }
+  
+  if (criticalIssues > 0) {
+    return `${criticalIssues} critical issues may prevent distribution and cost you streaming revenue.`
+  }
+  
+  return 'Some optimizations could improve your track\'s discoverability and revenue potential.'
+}
+
+const isFixableIssue = (issueCode) => {
+  const fixableIssues = [
+    'missing_title',
+    'missing_artist', 
+    'missing_album',
+    'missing_isrc',
+    'invalid_isrc_format'
+  ]
+  return fixableIssues.includes(issueCode)
+}
+
 const downloadReport = () => {
-  // TODO implement report download
+  // TODO: Implement report download
   console.log('Download report for:', props.results)
 }
 </script>
