@@ -305,7 +305,7 @@ onMounted(async () => {
   }
 })
 
-const handleUploadComplete = (data) => {
+const handleUploadComplete = (  ) => {
   // todo upload complete handler
 }
 

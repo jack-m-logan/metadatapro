@@ -64,23 +64,29 @@
         <!-- Welcome Section -->
         <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
           <div class="px-4 py-5 sm:p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-2">
-              🎵 Ready to validate your music metadata?
-            </h2>
-            <p class="text-gray-600 mb-4">
-              Upload your audio files to validate metadata for SGAE, AIE, and AGEDI registration.
-            </p>
-            <NuxtLink
-              to="/dashboard/validate-metadata"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Start Validation
-            </NuxtLink>
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h2 class="text-lg font-medium text-gray-900 mb-2">
+                  🎵 Ready to validate your music metadata?
+                </h2>
+                <p class="text-gray-600 mb-4">
+                  Upload your audio files to validate metadata for distribution and royalty collection.
+                </p>
+              </div>
+              <div class="flex-shrink-0 ml-6">
+                <NuxtLink
+                  to="/dashboard/validate-metadata"
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Upload Track
+                </NuxtLink>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-6">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-6">
           <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-5">
               <div class="flex items-center">
@@ -92,10 +98,10 @@
                 <div class="ml-5 w-0 flex-1">
                   <dl>
                     <dt class="text-sm font-medium text-gray-500 truncate">
-                      Tracks Validated
+                      Total Tracks
                     </dt>
                     <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.tracksValidated }}
+                      {{ stats.totalTracks }}
                     </dd>
                   </dl>
                 </div>
@@ -114,10 +120,10 @@
                 <div class="ml-5 w-0 flex-1">
                   <dl>
                     <dt class="text-sm font-medium text-gray-500 truncate">
-                      Issues Fixed
+                      Validated
                     </dt>
                     <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.issuesFixed }}
+                      {{ stats.validatedTracks }}
                     </dd>
                   </dl>
                 </div>
@@ -130,16 +136,38 @@
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">📄</span>
+                    <span class="text-white text-sm font-medium">⚠</span>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
                     <dt class="text-sm font-medium text-gray-500 truncate">
-                      Reports Generated
+                      Need Fixes
                     </dt>
                     <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.reportsGenerated }}
+                      {{ stats.tracksWithIssues }}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                    <span class="text-white text-sm font-medium">📊</span>
+                  </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 truncate">
+                      Avg Score
+                    </dt>
+                    <dd class="text-lg font-medium text-gray-900">
+                      {{ stats.averageScore }}/100
                     </dd>
                   </dl>
                 </div>
@@ -148,64 +176,159 @@
           </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-md">
-          <div class="px-4 py-5 sm:px-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">
-              Recent Validations
-            </h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">
-              Your latest metadata validation activity
-            </p>
-          </div>
-          <div class="border-t border-gray-200">
-            <div
-              v-if="recentTracks.length === 0"
-              class="px-4 py-5 text-center text-gray-500"
-            >
-              No validations yet. <NuxtLink
-                to="/dashboard/validate-metadata"
-                class="text-indigo-600 hover:text-indigo-500"
+        <!-- Usage Limit Banner (Free Tier) -->
+        <div 
+          v-if="isApproachingLimit"
+          class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6"
+        >
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg
+                class="h-5 w-5 text-yellow-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
-                Upload your first track!
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="ml-3 flex-1">
+              <h3 class="text-sm font-medium text-yellow-800">
+                You've used {{ stats.totalTracks }}/5 free tracks this month
+              </h3>
+              <p class="mt-1 text-sm text-yellow-700">
+                Upgrade to Pro for unlimited track validation and advanced features.
+              </p>
+              <div class="mt-3">
+                <button class="bg-yellow-100 px-3 py-1 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-200">
+                  Upgrade to Pro
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- All Tracks Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+          <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  Your Tracks
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                  Click on any track to view detailed validation results
+                </p>
+              </div>
+              <NuxtLink
+                to="/dashboard/validate-metadata"
+                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                + Add Track
               </NuxtLink>
             </div>
-            <ul
-              v-else
-              class="divide-y divide-gray-200"
+          </div>
+
+          <div class="divide-y divide-gray-200">
+            <div
+              v-if="allTracks.length === 0"
+              class="px-4 py-12 text-center text-gray-500"
             >
-              <li
-                v-for="track in recentTracks"
-                :key="track.id"
-                class="px-4 py-4"
+              <div class="text-4xl mb-4">
+                🎵
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">
+                No tracks uploaded yet
+              </h3>
+              <p class="text-gray-500 mb-4">
+                Upload your first track to get started with metadata validation
+              </p>
+              <NuxtLink
+                to="/dashboard/validate-metadata"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
               >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                        <span class="text-sm font-medium text-gray-700">🎵</span>
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">
+                Upload Your First Track
+              </NuxtLink>
+            </div>
+
+            <div
+              v-for="track in allTracks"
+              :key="track.id"
+              class="px-4 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+              @click="navigateToTrack(track.id)"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 flex-1 min-w-0">
+                  <!-- Track Icon -->
+                  <div class="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span class="text-xl">🎵</span>
+                  </div>
+                  
+                  <!-- Track Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2">
+                      <h4 class="text-sm font-medium text-gray-900 truncate">
                         {{ track.title || track.filename }}
-                      </div>
-                      <div class="text-sm text-gray-500">
+                      </h4>
+                      <span
+                        v-if="track.validation_score !== null"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        :class="getScoreClass(track.validation_score)"
+                      >
+                        {{ track.validation_score }}/100
+                      </span>
+                    </div>
+                    <div class="flex items-center space-x-4 mt-1">
+                      <p class="text-sm text-gray-500 truncate">
+                        {{ track.artist || 'Unknown Artist' }}
+                      </p>
+                      <span class="text-gray-300">•</span>
+                      <p class="text-sm text-gray-500">
                         {{ formatDate(track.created_at) }}
-                      </div>
+                      </p>
+                      <span
+                        v-if="track.duration_seconds"
+                        class="text-sm text-gray-500"
+                      >
+                        • {{ formatDuration(track.duration_seconds) }}
+                      </span>
                     </div>
                   </div>
-                  <div class="flex items-center">
+                </div>
+                
+                <!-- Status & Action -->
+                <div class="flex items-center space-x-3">
+                  <div class="flex flex-col items-end">
                     <span
                       :class="getStatusClass(track.validation_status)"
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
                       {{ getStatusText(track.validation_status) }}
                     </span>
+                    <span
+                      v-if="track.has_critical_issues"
+                      class="text-xs text-red-600 mt-1"
+                    >
+                      {{ getIssueCount(track) }} issues found
+                    </span>
                   </div>
+                  <svg
+                    class="h-5 w-5 text-gray-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
                 </div>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -217,17 +340,24 @@
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 
-const isLoading = ref(false)
+const isLoading = ref(true)
 const userProfile = ref(null)
 const stats = ref({
-  tracksValidated: 0,
-  issuesFixed: 0,
-  reportsGenerated: 0
+  totalTracks: 0,
+  validatedTracks: 0,
+  tracksWithIssues: 0,
+  averageScore: 0
 })
-const recentTracks = ref([])
+const allTracks = ref([])
+
+const isApproachingLimit = computed(() => {
+  return stats.value.totalTracks >= 4 // show warning when user hits 4/5 tracks
+})
 
 const fetchUserData = async () => {
   try {
+    isLoading.value = true
+    
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('*')
@@ -241,17 +371,36 @@ const fetchUserData = async () => {
       .select('*')
       .eq('user_id', user.value.id)
       .order('created_at', { ascending: false })
-      .limit(5)
 
-    recentTracks.value = tracks || []
+    allTracks.value = tracks || []
 
-    stats.value.tracksValidated = tracks?.length || 0
-    stats.value.issuesFixed = 0
-    stats.value.reportsGenerated = 0
+    // calculate stats
+    const totalTracks = tracks?.length || 0
+    const validatedTracks = tracks?.filter(t => t.validation_status === 'completed').length || 0
+    const tracksWithIssues = tracks?.filter(t => t.has_critical_issues || t.has_warnings).length || 0
+    
+    // average score for validated tracks
+    const validatedWithScores = tracks?.filter(t => t.validation_score !== null) || []
+    const averageScore = validatedWithScores.length > 0 
+      ? Math.round(validatedWithScores.reduce((sum, t) => sum + (t.validation_score || 0), 0) / validatedWithScores.length)
+      : 0
+
+    stats.value = {
+      totalTracks,
+      validatedTracks,
+      tracksWithIssues,
+      averageScore
+    }
 
   } catch (error) {
     console.error('Error fetching user data:', error)
+  } finally {
+    isLoading.value = false
   }
+}
+
+const navigateToTrack = (trackId) => {
+  navigateTo(`/dashboard/tracks/${trackId}`)
 }
 
 watch(user, async (newUser) => {
@@ -280,6 +429,13 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString()
 }
 
+const formatDuration = (seconds) => {
+  if (!seconds) return ''
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 const getStatusClass = (status) => {
   switch (status) {
     case 'completed':
@@ -287,6 +443,7 @@ const getStatusClass = (status) => {
     case 'processing':
       return 'bg-yellow-100 text-yellow-800'
     case 'error':
+    case 'failed':
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
@@ -296,15 +453,30 @@ const getStatusClass = (status) => {
 const getStatusText = (status) => {
   switch (status) {
     case 'completed':
-      return 'Completed'
+      return 'Validated'
     case 'processing':
       return 'Processing'
     case 'error':
+    case 'failed':
       return 'Error'
     case 'pending':
       return 'Pending'
     default:
       return 'Unknown'
   }
+}
+
+const getScoreClass = (score) => {
+  if (score >= 80) return 'bg-green-100 text-green-800'
+  if (score >= 60) return 'bg-yellow-100 text-yellow-800'
+  return 'bg-red-100 text-red-800'
+}
+
+const getIssueCount = (track) => {
+  // TODO this needs to be calculated based on validation_issues table
+  // return a placeholder for now
+  if (track.has_critical_issues) return 'Critical'
+  if (track.has_warnings) return 'Minor'
+  return ''
 }
 </script>
