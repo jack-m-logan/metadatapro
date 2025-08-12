@@ -280,7 +280,7 @@
 </template>
 
 <script setup>
-import ValidationResults from '/components/ValidationResults.vue'
+import ValidationResults from '/components/validation-results.vue'
 
 definePageMeta({
   middleware: 'auth'
