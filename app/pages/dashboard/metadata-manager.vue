@@ -1,0 +1,847 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <NuxtLink
+              to="/dashboard"
+              class="text-indigo-600 hover:text-indigo-500 mr-4"
+            >
+              ← Back to Dashboard
+            </NuxtLink>
+            <h1 class="text-xl font-semibold text-gray-900">
+              Metadata Manager
+            </h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-700">
+              {{ tracks.length }} tracks
+            </span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <!-- Header Section -->
+        <div class="bg-white shadow rounded-lg mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-medium text-gray-900">
+                  Your Music Metadata
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                  Manage and validate all your track metadata in one place
+                </p>
+              </div>
+              <NuxtLink
+                to="/dashboard/validate-metadata"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                + Add Track
+              </NuxtLink>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="px-6 py-3 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <!-- Search -->
+                <div class="relative">
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search tracks..."
+                    class="block w-64 pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    @input="onFilterTextBoxChanged"
+                  >
+                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg
+                      class="h-4 w-4 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Selection Info -->
+                <span
+                  v-if="selectedRowCount > 0"
+                  class="text-sm text-gray-700 bg-indigo-50 px-3 py-1 rounded-full"
+                >
+                  {{ selectedRowCount }} selected
+                </span>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center space-x-3">
+                <button
+                  v-if="selectedRowCount > 0"
+                  class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  :disabled="isProcessing"
+                  @click="validateSelected"
+                >
+                  <svg
+                    class="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                    />
+                  </svg>
+                  Validate
+                </button>
+                <button
+                  v-if="selectedRowCount > 0"
+                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  @click="showProFeature('bulk_correction')"
+                >
+                  <svg
+                    class="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                    />
+                  </svg>
+                  ⭐ Fix (Pro)
+                </button>
+                <button
+                  class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  @click="exportData"
+                >
+                  <svg
+                    class="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Export CSV
+                </button>
+
+                <!-- User tier toggle for development -->
+                <button
+                  class="px-3 py-1 text-xs bg-gray-200 rounded"
+                  @click="toggleUserTier"
+                >
+                  Tier: {{ userTier }} (click to toggle)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Toast
+          :visible="!!message.text"
+          :message="message.text"
+          :type="message.type"
+          @close="clearMessage"
+        />
+
+        <!-- Grid Tabs -->
+        <div class="bg-white border-b border-gray-200">
+          <div class="px-6">
+            <nav
+              class="-mb-px flex space-x-8"
+              aria-label="Tabs"
+            >
+              <button
+                v-for="tab in columnTabs"
+                :key="tab.value"
+                class="py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+                :class="selectedColumnSet === tab.value
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                @click="selectColumnSet(tab.value)"
+              >
+                {{ tab.label }}
+                <span
+                  v-if="tab.isPro"
+                  class="ml-1 text-xs text-purple-500"
+                >
+                  ⭐
+                </span>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        <!-- AG Grid -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+          <ag-grid-vue
+            style="height: calc(100vh - 67px); min-height: 500px;"
+            class="ag-theme-alpine"
+            :column-defs="columnDefs"
+            :row-data="tracks"
+            :default-col-def="defaultColDef"
+            :grid-options="gridOptions"
+            @grid-ready="onGridReady"
+            @selection-changed="onSelectionChanged"
+          />
+        </div>
+
+        <!-- Revenue Impact Banner -->
+        <div
+          v-if="revenueImpact.potentialValue > 0"
+          class="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4"
+        >
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg
+                class="h-5 w-5 text-yellow-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">
+                Potential Revenue Impact: €{{ revenueImpact.potentialValue }}/month
+              </h3>
+              <div class="text-sm text-yellow-700 mt-1">
+                <ul class="list-disc list-inside space-y-1">
+                  <li v-if="revenueImpact.missingISRC > 0">
+                    {{ revenueImpact.missingISRC }} tracks missing ISRC - losing radio royalties
+                  </li>
+                  <li v-if="revenueImpact.lowQuality > 0">
+                    {{ revenueImpact.lowQuality }} tracks with quality issues - affecting
+                    discoverability
+                  </li>
+                </ul>
+              </div>
+              <div class="mt-3">
+                <button
+                  class="bg-purple-100 px-3 py-1 rounded-md text-sm font-medium text-purple-800 hover:bg-purple-200"
+                  @click="showProFeature('fix_all')"
+                >
+                  ⭐ Fix All Issues (Pro Feature)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pro Feature Modal -->
+        <div
+          v-if="showingProModal"
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+          @click="hideProFeature"
+        >
+          <div
+            class="bg-white rounded-lg p-6 max-w-md mx-4"
+            @click.stop
+          >
+            <div class="text-center">
+              <div
+                class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 mb-4"
+              >
+                <span class="text-2xl">⭐</span>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">
+                {{ proModalContent.title }}
+              </h3>
+              <p class="text-sm text-gray-500 mb-6">
+                {{ proModalContent.description }}
+              </p>
+              <div class="flex space-x-3">
+                <button
+                  class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  @click="hideProFeature"
+                >
+                  Coming Soon!
+                </button>
+                <button
+                  class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  @click="hideProFeature"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { AgGridVue } from 'ag-grid-vue3'
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
+import 'ag-grid-community/styles/ag-grid.css'
+import 'ag-grid-community/styles/ag-theme-alpine.css'
+import Toast from '/components/toast-messages.vue'
+
+ModuleRegistry.registerModules([AllCommunityModule])
+
+const userTier = ref('free') // change to 'pro' to test Pro features
+
+const toggleUserTier = () => {
+    userTier.value = userTier.value === 'free' ? 'pro' : 'free'
+    console.log('User tier changed to:', userTier.value)
+}
+
+definePageMeta({
+    middleware: 'auth'
+})
+
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
+
+// Data
+const tracks = ref([])
+const isLoading = ref(true)
+const isProcessing = ref(false)
+const searchQuery = ref('')
+const selectedColumnSet = ref('basic')
+const selectedRowCount = ref(0)
+
+// UI state
+const message = ref({ text: '', type: '' })
+const showingProModal = ref(false)
+const proModalContent = ref({})
+
+// AG Grid
+const gridApi = ref(null)
+const columnApi = ref(null)
+
+const columnTabs = ref([
+    { label: 'Basic', value: 'basic', isPro: false },
+    { label: 'Technical', value: 'technical', isPro: false },
+    { label: 'Rights', value: 'rights', isPro: true },
+    { label: 'All Fields', value: 'all', isPro: true }
+])
+
+const getColumnDefs = (columnSet = 'basic') => {
+    const baseColumns = [
+        {
+            headerName: '',
+            field: 'checkbox',
+            headerCheckboxSelection: true,
+            headerCheckboxSelectionFilteredOnly: true,
+            checkboxSelection: true,
+            headerCheckboxSelection: true,
+            width: 50,
+            pinned: 'left',
+            lockPosition: 'left',
+            suppressMenu: true,
+            sortable: false,
+            filter: false,
+            cellStyle: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0'
+            },
+            headerClass: 'checkbox-header',
+        },
+        {
+            headerName: 'Track',
+            field: 'title',
+            editable: true,
+            cellRenderer: (params) => {
+                return params.value ||
+                    params.data.original_metadata?.title ||
+                    params.data.filename ||
+                    'Unknown Track'
+            },
+        },
+        {
+            headerName: 'Duration',
+            field: 'duration_seconds',
+            width: 100,
+            editable: false,
+            valueFormatter: (params) => formatDuration(params.value)
+        },
+        {
+            headerName: 'File Size',
+            field: 'file_size',
+            width: 100,
+            editable: false,
+            valueFormatter: (params) => {
+                if (!params.value) return ''
+                const size = params.value / 1024 / 1024 // Convert to MB
+                return `${size.toFixed(2)} MB`
+            }
+        },
+        {
+            headerName: 'Artist',
+            field: 'artist',
+            editable: true,
+            cellRenderer: (params) => {
+                const artist = params.value || params.data.original_metadata?.artist
+                return artist || '<span class="text-gray-500 italic">Click to add artist</span>'
+            }
+        },
+        {
+            headerName: 'Album',
+            field: 'album',
+            editable: true,
+            cellRenderer: (params) => {
+                const album = params.value || params.data.original_metadata?.album
+                return album || '<span class="text-gray-500 italic">Click to add album</span>'
+            }
+        },
+        {
+            headerName: 'ISRC',
+            field: 'isrc',
+            width: 120,
+            editable: true,
+            cellRenderer: (params) => {
+                if (params.value) {
+                    return params.value
+                } else {
+                    return '<span class="text-gray-500 italic">Click to add ISRC</span>'
+                }
+            }
+        }
+    ]
+
+    const technicalColumns = [
+        {
+            headerName: 'Format',
+            field: 'file_format',
+            width: 80,
+            editable: false
+        },
+        {
+            headerName: 'Sample Rate',
+            field: 'sample_rate',
+            width: 100,
+            editable: false,
+            valueFormatter: (params) => params.value ? `${params.value} Hz` : ''
+        },
+        {
+            headerName: 'Bit Depth',
+            field: 'bit_depth',
+            width: 90,
+            editable: false,
+            valueFormatter: (params) => params.value ? `${params.value} bit` : ''
+        }
+    ]
+
+    const rightsColumns = [
+        {
+            headerName: 'Publisher',
+            field: 'publisher',
+            width: 150,
+            editable: true,
+            cellRenderer: (params) => {
+                if (columnSet === 'all') {
+                    return params.value || '<span class="text-gray-500 italic">Click to add</span>'
+                } else {
+                    return '<span class="text-gray-400">🔒 Pro Feature</span>'
+                }
+            }
+        },
+        {
+            headerName: 'Songwriter',
+            field: 'songwriter',
+            width: 150,
+            editable: columnSet === 'all',
+            cellRenderer: (params) => {
+                if (columnSet === 'all') {
+                    return params.value || '<span class="text-gray-500 italic">Click to add</span>'
+                } else {
+                    return '<span class="text-gray-400">🔒 Pro Feature</span>'
+                }
+            }
+        }
+    ]
+
+    const endColumns = [
+        {
+            headerName: 'Score',
+            field: 'validation_score',
+            width: 80,
+            editable: false,
+            cellRenderer: (params) => {
+                if (params.value !== null) {
+                    const score = params.value
+                    const colorClass = score >= 80 ? 'bg-green-100 text-green-800' :
+                        score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${score}/100</span>`
+                }
+                return '<span class="text-gray-500">Not validated</span>'
+            }
+        },
+        {
+            headerName: 'Status',
+            field: 'validation_status',
+            width: 100,
+            editable: false,
+            cellRenderer: (params) => {
+                const status = params.value
+                const statusClasses = {
+                    'completed': 'bg-green-100 text-green-800',
+                    'processing': 'bg-yellow-100 text-yellow-800',
+                    'error': 'bg-red-100 text-red-800',
+                    'failed': 'bg-red-100 text-red-800'
+                }
+                const statusTexts = {
+                    'completed': 'Validated',
+                    'processing': 'Processing',
+                    'error': 'Error',
+                    'failed': 'Error',
+                    'pending': 'Pending'
+                }
+                const colorClass = statusClasses[status] || 'bg-gray-100 text-gray-800'
+                const text = statusTexts[status] || 'Unknown'
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`
+            }
+        },
+        {
+            headerName: 'Actions',
+            width: 80,
+            editable: false,
+            cellStyle: { textAlign: 'center' },
+            cellRenderer: (params) => {
+                const trackId = params.data.id
+                return `<button class="text-gray-600 hover:text-gray-900 text-xs font-medium" onclick="window.showTrackDetails('${trackId}')">View</button>`
+            }
+        }
+    ]
+
+    // Build column set based on selection
+    let columns = [...baseColumns]
+
+    if (columnSet === 'technical' || columnSet === 'rights' || columnSet === 'all') {
+        columns = [...columns, ...technicalColumns]
+    }
+
+    if (columnSet === 'rights' || columnSet === 'all') {
+        columns = [...columns, ...rightsColumns]
+    }
+
+    columns = [...columns, ...endColumns]
+
+    return columns
+}
+
+const onCellValueChanged = async (params) => {
+    const { data, newValue, oldValue, colDef } = params
+
+    // Normalize values for comparison
+    const normalizeValue = (val) => {
+        if (val === null || val === undefined || val === '') return null
+        return typeof val === 'string' ? val.trim() : val
+    }
+
+    const normalizedNew = normalizeValue(newValue)
+    const normalizedOld = normalizeValue(oldValue)
+
+    // Only save if value actually changed
+    if (normalizedNew === normalizedOld) {
+        return
+    }
+
+    // ISRC validation
+    if (colDef.field === 'isrc' && normalizedNew) {
+        const isrcRegex = /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/
+        if (!isrcRegex.test(normalizedNew.toUpperCase())) {
+            showMessage('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
+            // Revert the cell to old value
+            data.isrc = normalizedOld
+            params.api.refreshCells({ rowNodes: [params.node] })
+            return
+        }
+        // to uppercase for valid ISRCs
+        normalizedNew = normalizedNew.toUpperCase()
+    }
+
+    try {
+        const { error } = await supabase
+            .from('tracks')
+            .update({ [colDef.field]: normalizedNew })
+            .eq('id', data.id)
+
+        if (error) throw error
+
+        // Update local data
+        data[colDef.field] = normalizedNew
+
+        showMessage(`${colDef.headerName} updated successfully`, 'success')
+    } catch (error) {
+        console.error('Error saving edit:', error)
+        showMessage('Failed to save changes', 'error')
+        params.api.refreshCells({ rowNodes: [params.node] })
+    }
+}
+
+const columnDefs = ref(getColumnDefs('basic'))
+
+const defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+    minWidth: 80,
+}
+
+const gridOptions = {
+    theme: 'legacy',
+    rowSelection: {
+        mode: 'multiRow',
+        checkboxes: false,
+        headerCheckbox: false,
+        enableClickSelection: false
+    },
+    stopEditingWhenCellsLoseFocus: true,
+    onCellValueChanged: onCellValueChanged,
+    pagination: true,
+    paginationAutoPageSize: true,
+    suppressHorizontalScroll: false,
+    suppressPaginationPanel: false
+}
+
+// Computed
+const revenueImpact = computed(() => {
+    const missingISRC = tracks.value.filter(t => !t.isrc).length
+    const lowQuality = tracks.value.filter(t => t.validation_score && t.validation_score < 60).length
+
+    return {
+        missingISRC,
+        lowQuality,
+        potentialValue: (missingISRC * 50) + (lowQuality * 20)
+    }
+})
+
+const fetchTracks = async () => {
+    try {
+        isLoading.value = true
+
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('user_tier')
+            .eq('id', user.value.id)
+            .single()
+
+        userTier.value = profile?.user_tier || 'free'
+
+        const { data, error } = await supabase
+            .from('tracks')
+            .select('*')
+            .eq('user_id', user.value.id)
+            .order('created_at', { ascending: false })
+
+        if (error) throw error
+        tracks.value = data || []
+
+    } catch (error) {
+        console.error('Error fetching tracks:', error)
+        showMessage('Failed to load tracks', 'error')
+    } finally {
+        isLoading.value = false
+    }
+}
+
+const onGridReady = (params) => {
+    gridApi.value = params.api
+    columnApi.value = params.columnApi
+
+    window.validateTrack = validateTrack
+    window.showProFeature = showProFeature
+    window.showTrackDetails = showTrackDetails
+}
+
+const onSelectionChanged = () => {
+    if (gridApi.value) {
+        selectedRowCount.value = gridApi.value.getSelectedRows().length
+    }
+}
+
+const onFilterTextBoxChanged = () => {
+    if (gridApi.value) {
+        gridApi.value.setQuickFilter(searchQuery.value)
+    }
+}
+
+// const updateColumnSet = () => {
+//     columnDefs.value = getColumnDefs(selectedColumnSet.value)
+// }
+
+const validateTrack = async (trackId) => {
+    try {
+        await $fetch('/api/validation/validate-track', {
+            method: 'POST',
+            body: { trackId }
+        })
+
+        showMessage('Track validated successfully', 'success')
+        await fetchTracks()
+    } catch (error) {
+        console.error('Validation failed:', error)
+        showMessage('Validation failed. Please try again.', 'error')
+    }
+}
+
+const validateSelected = async () => {
+    if (!gridApi.value) return
+
+    const selectedRows = gridApi.value.getSelectedRows()
+    if (selectedRows.length === 0) return
+
+    try {
+        isProcessing.value = true
+
+        for (const row of selectedRows) {
+            await validateTrack(row.id)
+        }
+
+        showMessage(`${selectedRows.length} tracks validated successfully`, 'success')
+    } catch (error) {
+        showMessage('Some tracks failed to validate', error)
+    } finally {
+        isProcessing.value = false
+    }
+}
+
+const exportData = () => {
+    if (gridApi.value) {
+        gridApi.value.exportDataAsCsv({
+            fileName: 'metadata-export.csv'
+        })
+        showMessage('CSV exported successfully', 'success')
+    }
+}
+
+const showTrackDetails = (trackId) => {
+    navigateTo(`/dashboard/tracks/${trackId}`)
+}
+
+// const showProFeature = (feature) => {
+//     const features = {
+//         isrc_generation: {
+//             title: 'ISRC Generation',
+//             description: 'Automatically generate unique ISRC codes for your tracks. Coming soon in Pro!'
+//         },
+//         single_correction: {
+//             title: 'Metadata Correction',
+//             description: 'Automatically fix metadata issues and embed corrected tags. Coming soon in Pro!'
+//         },
+//         bulk_correction: {
+//             title: 'Bulk Corrections',
+//             description: 'Fix multiple tracks at once with our automated correction service. Coming soon in Pro!'
+//         },
+//         fix_all: {
+//             title: 'Fix All Issues',
+//             description: 'Automatically resolve all metadata issues across your entire catalog. Coming soon in Pro!'
+//         }
+//     }
+
+//     proModalContent.value = features[feature]
+//     showingProModal.value = true
+// }
+
+const hideProFeature = () => {
+    showingProModal.value = false
+    proModalContent.value = {}
+}
+
+const showMessage = (text, type) => {
+    message.value = { text, type }
+    setTimeout(() => {
+        message.value = { text: '', type: '' }
+    }, 5000)
+}
+
+const clearMessage = () => {
+    message.value = { text: '', type: '' }
+}
+
+const formatDuration = (seconds) => {
+    if (!seconds) return ''
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.round(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+// Lifecycle
+onMounted(async () => {
+    if (user.value) {
+        await fetchTracks()
+    }
+})
+
+// Auth check
+watchEffect(() => {
+    if (user.value === null) {
+        navigateTo('/auth/user-login')
+    }
+})
+
+const selectColumnSet = (columnSet) => {
+    if ((columnSet === 'rights' || columnSet === 'all') && userTier.value !== 'pro') {
+        showProFeature('advanced_columns')
+        return
+    }
+
+    selectedColumnSet.value = columnSet
+    columnDefs.value = getColumnDefs(columnSet)
+    if (gridApi.value) {
+        gridApi.value.setGridOption('columnDefs', columnDefs.value)
+    }
+}
+
+const showProFeature = (feature) => {
+    const features = {
+        advanced_columns: {
+            title: 'Advanced Columns',
+            description: 'Unlock Rights & Publishing fields, and view all metadata columns with Pro!'
+        }
+    }
+
+    proModalContent.value = features[feature]
+    showingProModal.value = true
+}
+</script>
+
+<style>
+.ag-theme-alpine {
+    --ag-header-background-color: #f9fafb;
+    --ag-header-foreground-color: #374151;
+    --ag-border-color: #e5e7eb;
+    --ag-row-hover-color: #f3f4f6;
+    --ag-selected-row-background-color: #eff6ff;
+}
+
+.ag-theme-alpine .ag-header-cell-text {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+</style>

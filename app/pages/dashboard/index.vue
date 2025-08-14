@@ -85,6 +85,93 @@
           </div>
         </div>
 
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+          <!-- Upload Track -->
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                    <span class="text-white text-lg">📤</span>
+                  </div>
+                </div>
+                <div class="ml-5">
+                  <h3 class="text-lg font-medium text-gray-900">
+                    Upload Track
+                  </h3>
+                  <p class="text-sm text-gray-500">
+                    Add new music for validation
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4">
+                <NuxtLink
+                  to="/dashboard/validate-metadata"
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 w-full justify-center"
+                >
+                  Upload Track
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Manager -->
+          <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                    <span class="text-white text-lg">📊</span>
+                  </div>
+                </div>
+                <div class="ml-5">
+                  <h3 class="text-lg font-medium text-gray-900">
+                    Metadata Manager
+                  </h3>
+                  <p class="text-sm text-gray-500">
+                    Edit and manage all tracks
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4">
+                <NuxtLink
+                  to="/dashboard/metadata-manager"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 w-full justify-center"
+                >
+                  Manage Metadata
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pro Features Teaser -->
+          <div class="bg-gradient-to-r from-purple-400 to-indigo-500 overflow-hidden shadow rounded-lg">
+            <div class="p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-white bg-opacity-20 rounded-md flex items-center justify-center">
+                    <span class="text-white text-lg">⭐</span>
+                  </div>
+                </div>
+                <div class="ml-5">
+                  <h3 class="text-lg font-medium text-white">
+                    Go Pro
+                  </h3>
+                  <p class="text-sm text-purple-100">
+                    Unlimited tracks + corrections
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4">
+                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-600 bg-white hover:bg-gray-50 w-full justify-center">
+                  Upgrade Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-6">
           <div class="bg-white overflow-hidden shadow rounded-lg">
