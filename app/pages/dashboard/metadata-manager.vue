@@ -292,6 +292,32 @@ const columnTabs = ref([
     { label: 'All Fields', value: 'all', isPro: true }
 ])
 
+const renderScoreBadge = (score) => {
+    const colorClass = score >= 80 ? 'bg-green-100 text-green-800' :
+        score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+            'bg-red-100 text-red-800'
+    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${score}/100</span>`
+}
+
+const renderStatusBadge = (status) => {
+    const statusClasses = {
+        'completed': 'bg-green-100 text-green-800',
+        'processing': 'bg-yellow-100 text-yellow-800', 
+        'error': 'bg-red-100 text-red-800',
+        'failed': 'bg-red-100 text-red-800'
+    }
+    const statusTexts = {
+        'completed': 'Validated',
+        'processing': 'Processing',
+        'error': 'Error', 
+        'failed': 'Error',
+        'pending': 'Pending'
+    }
+    const colorClass = statusClasses[status] || 'bg-gray-100 text-gray-800'
+    const text = statusTexts[status] || 'Unknown'
+    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`
+}
+
 const getColumnDefs = (columnSet = 'basic') => {
     const baseColumns = [
         {
@@ -437,11 +463,7 @@ const getColumnDefs = (columnSet = 'basic') => {
             editable: false,
             cellRenderer: (params) => {
                 if (params.value !== null) {
-                    const score = params.value
-                    const colorClass = score >= 80 ? 'bg-green-100 text-green-800' :
-                        score >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${score}/100</span>`
+                    return renderScoreBadge(params.value)
                 }
                 return '<span class="text-gray-500">Not validated</span>'
             }
@@ -452,23 +474,7 @@ const getColumnDefs = (columnSet = 'basic') => {
             width: 100,
             editable: false,
             cellRenderer: (params) => {
-                const status = params.value
-                const statusClasses = {
-                    'completed': 'bg-green-100 text-green-800',
-                    'processing': 'bg-yellow-100 text-yellow-800',
-                    'error': 'bg-red-100 text-red-800',
-                    'failed': 'bg-red-100 text-red-800'
-                }
-                const statusTexts = {
-                    'completed': 'Validated',
-                    'processing': 'Processing',
-                    'error': 'Error',
-                    'failed': 'Error',
-                    'pending': 'Pending'
-                }
-                const colorClass = statusClasses[status] || 'bg-gray-100 text-gray-800'
-                const text = statusTexts[status] || 'Unknown'
-                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`
+                return renderStatusBadge(params.value)
             }
         },
         {

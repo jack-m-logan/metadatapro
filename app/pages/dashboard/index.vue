@@ -259,12 +259,11 @@
                 <!-- Status & Action -->
                 <div class="flex items-center space-x-3">
                   <div class="flex flex-col items-end">
-                    <span
-                      :class="getStatusClass(track.validation_status)"
-                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    >
-                      {{ getStatusText(track.validation_status) }}
-                    </span>
+                    <StatusBadge
+                      type="status"
+                      :value="track.validation_status"
+                      shape="pill"
+                    />
                     <span
                       v-if="track.has_critical_issues"
                       class="text-xs text-red-600 mt-1"
@@ -385,41 +384,6 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
-const getStatusClass = (status) => {
-  switch (status) {
-    case 'completed':
-      return 'bg-green-100 text-green-800'
-    case 'processing':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'error':
-    case 'failed':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const getStatusText = (status) => {
-  switch (status) {
-    case 'completed':
-      return 'Validated'
-    case 'processing':
-      return 'Processing'
-    case 'error':
-    case 'failed':
-      return 'Error'
-    case 'pending':
-      return 'Pending'
-    default:
-      return 'Unknown'
-  }
-}
-
-const getScoreClass = (score) => {
-  if (score >= 80) return 'bg-green-100 text-green-800'
-  if (score >= 60) return 'bg-yellow-100 text-yellow-800'
-  return 'bg-red-100 text-red-800'
-}
 
 const getIssueCount = (track) => {
   // TODO this needs to be calculated based on validation_issues table
