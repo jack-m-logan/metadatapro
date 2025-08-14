@@ -90,19 +90,23 @@
           </div>
         </div>
 
-        <div
+        <AlertBanner
           v-if="errorMessage"
-          class="text-red-600 text-sm text-center"
-        >
-          {{ errorMessage }}
-        </div>
+          type="error"
+          :message="errorMessage"
+          variant="minimal"
+          :show-icon="false"
+          class="text-center"
+        />
 
-        <div
+        <AlertBanner
           v-if="successMessage"
-          class="text-green-600 text-sm text-center"
-        >
-          {{ successMessage }}
-        </div>
+          type="success"
+          :message="successMessage"
+          variant="minimal"
+          :show-icon="false"
+          class="text-center"
+        />
 
         <div>
           <button

@@ -27,20 +27,20 @@
       class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8"
     >
       <div class="px-4 py-6 sm:px-0">
-        <div class="bg-red-50 border border-red-200 rounded-md p-4">
-          <h4 class="font-medium text-red-800">
-            Error Loading Track
-          </h4>
-          <p class="text-red-700 mt-1">
-            {{ error }}
-          </p>
-          <NuxtLink
-            to="/dashboard"
-            class="mt-2 text-sm text-red-600 underline hover:text-red-500"
-          >
-            Back to Dashboard
-          </NuxtLink>
-        </div>
+        <AlertBanner
+          type="error"
+          title="Error Loading Track"
+          :message="error"
+        >
+          <template #action>
+            <NuxtLink
+              to="/dashboard"
+              class="mt-2 text-sm text-red-600 underline hover:text-red-500"
+            >
+              Back to Dashboard
+            </NuxtLink>
+          </template>
+        </AlertBanner>
       </div>
     </div>
 

@@ -49,12 +49,14 @@
           </div>
         </div>
 
-        <div
+        <AlertBanner
           v-if="errorMessage"
-          class="text-red-600 text-sm text-center"
-        >
-          {{ errorMessage }}
-        </div>
+          type="error"
+          :message="errorMessage"
+          variant="minimal"
+          :show-icon="false"
+          class="text-center"
+        />
 
         <div>
           <button

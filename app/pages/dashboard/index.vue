@@ -161,39 +161,14 @@
         </div>
 
         <!-- Usage Limit Banner (Free Tier) -->
-        <div 
+        <AlertBanner
           v-if="isApproachingLimit"
-          class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6"
-        >
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg
-                class="h-5 w-5 text-yellow-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-            <div class="ml-3 flex-1">
-              <h3 class="text-sm font-medium text-yellow-800">
-                You've used {{ stats.totalTracks }}/5 free tracks this month
-              </h3>
-              <p class="mt-1 text-sm text-yellow-700">
-                Upgrade to Pro for unlimited track validation and advanced features.
-              </p>
-              <div class="mt-3">
-                <button class="bg-yellow-100 px-3 py-1 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-200">
-                  Upgrade to Pro
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+          type="warning"
+          :title="`You've used ${stats.totalTracks}/5 free tracks this month`"
+          message="Upgrade to Pro for unlimited track validation and advanced features."
+          action-text="Upgrade to Pro"
+          class="mb-6"
+        />
 
         <!-- All Tracks Section -->
         <div class="bg-white shadow overflow-hidden sm:rounded-md">
@@ -257,13 +232,11 @@
                       <h4 class="text-sm font-medium text-gray-900 truncate">
                         {{ track.title || track.filename }}
                       </h4>
-                      <span
+                      <StatusBadge
                         v-if="track.validation_score !== null"
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                        :class="getScoreClass(track.validation_score)"
-                      >
-                        {{ track.validation_score }}/100
-                      </span>
+                        type="score"
+                        :value="track.validation_score"
+                      />
                     </div>
                     <div class="flex items-center space-x-4 mt-1">
                       <p class="text-sm text-gray-500 truncate">

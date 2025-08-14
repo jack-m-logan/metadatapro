@@ -7,7 +7,7 @@
     />
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div class="px-4 py-6 sm:px-0">
+      <div class="px-4 py-1 sm:px-0">
         <!-- Header Section -->
         <div class="bg-white shadow rounded-lg mb-6">
           <div class="px-6 py-4 border-b border-gray-200">
@@ -191,50 +191,15 @@
         </div>
 
         <!-- Revenue Impact Banner -->
-        <div
+        <AlertBanner
           v-if="revenueImpact.potentialValue > 0"
-          class="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4"
-        >
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg
-                class="h-5 w-5 text-yellow-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-yellow-800">
-                Potential Revenue Impact: €{{ revenueImpact.potentialValue }}/month
-              </h3>
-              <div class="text-sm text-yellow-700 mt-1">
-                <ul class="list-disc list-inside space-y-1">
-                  <li v-if="revenueImpact.missingISRC > 0">
-                    {{ revenueImpact.missingISRC }} tracks missing ISRC - losing radio royalties
-                  </li>
-                  <li v-if="revenueImpact.lowQuality > 0">
-                    {{ revenueImpact.lowQuality }} tracks with quality issues - affecting
-                    discoverability
-                  </li>
-                </ul>
-              </div>
-              <div class="mt-3">
-                <button
-                  class="bg-purple-100 px-3 py-1 rounded-md text-sm font-medium text-purple-800 hover:bg-purple-200"
-                  @click="showProFeature('fix_all')"
-                >
-                  ⭐ Fix All Issues (Pro Feature)
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+          type="warning"
+          :title="`Potential Revenue Impact: €${revenueImpact.potentialValue}/month`"
+          :message="revenueImpactMessage"
+          action-text="⭐ Fix All Issues (Pro Feature)"
+          class="mt-6"
+          @action="showProFeature('fix_all')"
+        />
 
         <!-- Pro Feature Modal -->
         <div
@@ -619,6 +584,17 @@ const revenueImpact = computed(() => {
         lowQuality,
         potentialValue: (missingISRC * 50) + (lowQuality * 20)
     }
+})
+
+const revenueImpactMessage = computed(() => {
+    const items = []
+    if (revenueImpact.value.missingISRC > 0) {
+        items.push(`${revenueImpact.value.missingISRC} tracks missing ISRC - losing radio royalties`)
+    }
+    if (revenueImpact.value.lowQuality > 0) {
+        items.push(`${revenueImpact.value.lowQuality} tracks with quality issues - affecting discoverability`)
+    }
+    return items
 })
 
 const fetchTracks = async () => {

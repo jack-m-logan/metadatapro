@@ -20,23 +20,15 @@
           </div>
         </div>
 
-        <div
+        <AlertBanner
           v-if="validationError"
-          class="bg-red-50 border border-red-200 rounded-md p-4 mb-6"
-        >
-          <h4 class="font-medium text-red-800">
-            Validation Error:
-          </h4>
-          <p class="text-red-700 mt-1">
-            {{ validationError }}
-          </p>
-          <button 
-            class="mt-2 text-sm text-red-600 underline hover:text-red-500" 
-            @click="clearError"
-          >
-            Try Again
-          </button>
-        </div>
+          type="error"
+          title="Validation Error"
+          :message="validationError"
+          action-text="Try Again"
+          class="mb-6"
+          @action="clearError"
+        />
 
         <div
           v-if="!showValidationResults && !isValidating"
