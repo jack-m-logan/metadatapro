@@ -130,93 +130,34 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-6">
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">📁</span>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Total Tracks
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.totalTracks }}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">✓</span>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Validated
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.validatedTracks }}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">⚠</span>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Need Fixes
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.tracksWithIssues }}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">📊</span>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Avg Score
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      {{ stats.averageScore }}/100
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            label="Total Tracks"
+            :value="stats.totalTracks"
+            icon="📁"
+            color="indigo"
+          />
+          
+          <StatsCard
+            label="Validated"
+            :value="stats.validatedTracks"
+            icon="✓"
+            color="green"
+          />
+          
+          <StatsCard
+            label="Need Fixes"
+            :value="stats.tracksWithIssues"
+            icon="⚠"
+            color="yellow"
+          />
+          
+          <StatsCard
+            label="Avg Score"
+            :value="stats.averageScore"
+            icon="📊"
+            color="purple"
+            suffix="/100"
+          />
         </div>
 
         <!-- Usage Limit Banner (Free Tier) -->
