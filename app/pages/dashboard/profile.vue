@@ -1003,7 +1003,6 @@ const clearMessage = () => {
 onMounted(() => {
   if (user.value) {
     fetchUserProfile()
-    debugArtistData()
   }
 })
 
