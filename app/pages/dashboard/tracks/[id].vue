@@ -4,6 +4,7 @@
       title="Track Validation"
       back-link="/dashboard"
       :user-profile="userProfile"
+      :show-sign-out="true"
     />
 
     <div

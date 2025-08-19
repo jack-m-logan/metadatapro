@@ -4,6 +4,7 @@
       title="Metadata Manager"
       back-link="/dashboard"
       :custom-info="`${tracks.length} tracks`"
+      :show-sign-out="true"
     />
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

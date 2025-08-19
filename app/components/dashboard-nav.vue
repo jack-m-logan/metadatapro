@@ -19,6 +19,13 @@
             {{ welcomeMessage }}
           </span>
           <button
+            v-if="showSettings"
+            class="text-sm text-gray-500 hover:text-gray-700"
+            @click="handleViewSettings"
+          >
+            Settings
+          </button>
+          <button
             v-if="showSignOut"
             class="text-sm text-gray-500 hover:text-gray-700"
             @click="handleSignOut"
@@ -44,6 +51,10 @@ const props = defineProps({
   showSignOut: {
     type: Boolean,
     default: false
+  },
+  showSettings: {
+    type: Boolean,
+    default: true
   },
   userProfile: {
     type: Object,
@@ -77,5 +88,9 @@ const handleSignOut = async () => {
   } catch (error) {
     console.error('Error signing out:', error)
   }
+}
+
+const handleViewSettings = () => {
+  navigateTo('/dashboard/profile')
 }
 </script>

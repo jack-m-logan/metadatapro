@@ -42,7 +42,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
           <ActionCard
             title="Upload Track"
             description="Add new music for validation"
@@ -60,7 +60,17 @@
             action-text="Manage Metadata"
             to="/dashboard/metadata-manager"
             variant="secondary"
-            color="purple"
+            color="blue"
+          />
+
+          <ActionCard
+            title="Profile & Artists"
+            description="Manage your verified artists"
+            icon="👤"
+            action-text="Manage Profile"
+            to="/dashboard/profile"
+            variant="secondary"
+            color="blue"
           />
 
           <ActionCard

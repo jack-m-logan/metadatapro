@@ -4,6 +4,7 @@
       title="Metadata Validation"
       back-link="/dashboard"
       :user-profile="userProfile"
+      :show-sign-out="true"
     />
 
     <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
