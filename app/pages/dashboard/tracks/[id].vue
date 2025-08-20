@@ -137,11 +137,19 @@
         </div>
       </div>
     </div>
+
+    <Toast
+      :visible="!!toastMessage.text"
+      :message="toastMessage.text"
+      :type="toastMessage.type"
+      @close="clearToast"
+    />
   </div>
 </template>
 
 <script setup>
 import ValidationResults from '/components/validation-results.vue'
+import Toast from '/components/toast-messages.vue'
 
 definePageMeta({
   middleware: 'auth'
@@ -150,6 +158,7 @@ definePageMeta({
 const route = useRoute()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const { showToast, clearToast, message: toastMessage } = useToast()
 
 const trackId = route.params.id
 const isLoading = ref(true)
@@ -196,6 +205,7 @@ const fetchTrackData = async () => {
   } catch (err) {
     console.error('Error fetching track:', err)
     error.value = err.message
+    showToast('Failed to load track data', 'error')
   } finally {
     isLoading.value = false
   }
@@ -212,11 +222,13 @@ const validateTrack = async () => {
     
     if (results.success) {
       await fetchTrackData()
+      showToast('Track validation completed successfully', 'success')
     }
     
   } catch (err) {
     console.error('Validation failed:', err)
     error.value = 'Validation failed. Please try again.'
+    showToast('Validation failed. Please try again.', 'error')
   } finally {
     isValidating.value = false
   }
@@ -229,11 +241,13 @@ const revalidateTrack = async () => {
 const downloadReport = () => {
   // TODO implement report download
   console.log('Download report for track:', trackId)
+  showToast('Report download feature coming soon', 'info')
 }
 
 const fixMetadata = () => {
   // TODO implement metadata correction service
   console.log('Fix metadata for track:', trackId)
+  showToast('Metadata correction service coming soon', 'info')
 }
 
 const goToDashboard = () => {

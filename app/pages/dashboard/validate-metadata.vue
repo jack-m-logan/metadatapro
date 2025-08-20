@@ -233,17 +233,27 @@
         </div>
       </div>
     </main>
+
+    <Toast
+      :visible="!!toastMessage.text"
+      :message="toastMessage.text"
+      :type="toastMessage.type"
+      @close="clearToast"
+    />
   </div>
 </template>
 
 <script setup>
 import ValidationResults from '/components/validation-results.vue'
+import Toast from '/components/toast-messages.vue'
 
 definePageMeta({
   middleware: 'auth'
 })
 
 const user = useSupabaseUser()
+const { showToast, clearToast, message: toastMessage } = useToast()
+
 const userProfile = ref(null)
 const showValidationResults = ref(false)
 const validationResults = ref(null)
@@ -262,8 +272,8 @@ onMounted(async () => {
   }
 })
 
-const handleUploadComplete = (  ) => {
-  // todo upload complete handler
+const handleUploadComplete = (result) => {
+  showToast(`Track "${result.track.filename}" uploaded successfully!`, 'success')
 }
 
 const handleValidationRequest = async (trackId) => {
@@ -279,12 +289,17 @@ const handleValidationRequest = async (trackId) => {
     if (results.success) {
       validationResults.value = results
       showValidationResults.value = true
+      
+      // Show success toast for validation completion
+      const score = results.score || 0
+      showToast(`Validation complete! Score: ${score}/100`, 'success')
     } else {
       throw new Error('Validation was not successful')
     }
     
   } catch (error) {
     validationError.value = error.message || 'Validation failed'
+    showToast(error.message || 'Validation failed', 'error')
   } finally {
     isValidating.value = false
   }

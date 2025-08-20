@@ -143,10 +143,10 @@
         </div>
 
         <Toast
-          :visible="!!message.text"
-          :message="message.text"
-          :type="message.type"
-          @close="clearMessage"
+          :visible="!!toastMessage.text"
+          :message="toastMessage.text"
+          :type="toastMessage.type"
+          @close="clearToast"
         />
 
         <!-- Grid Tabs -->
@@ -252,6 +252,7 @@ import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import Toast from '/components/toast-messages.vue'
+const { showToast, clearToast, message: toastMessage } = useToast()
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -278,7 +279,6 @@ const selectedColumnSet = ref('basic')
 const selectedRowCount = ref(0)
 
 // UI state
-const message = ref({ text: '', type: '' })
 const showingProModal = ref(false)
 const proModalContent = ref({})
 
@@ -527,7 +527,7 @@ const onCellValueChanged = async (params) => {
     if (colDef.field === 'isrc' && normalizedNew) {
         const isrcRegex = /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/
         if (!isrcRegex.test(normalizedNew.toUpperCase())) {
-            showMessage('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
+            showToast('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
             // Revert the cell to old value
             data.isrc = normalizedOld
             params.api.refreshCells({ rowNodes: [params.node] })
@@ -548,10 +548,10 @@ const onCellValueChanged = async (params) => {
         // Update local data
         data[colDef.field] = normalizedNew
 
-        showMessage(`${colDef.headerName} updated successfully`, 'success')
+        showToast(`${colDef.headerName} updated successfully`, 'success')
     } catch (error) {
         console.error('Error saving edit:', error)
-        showMessage('Failed to save changes', 'error')
+        showToast('Failed to save changes', 'error')
         params.api.refreshCells({ rowNodes: [params.node] })
     }
 }
@@ -610,7 +610,7 @@ const fetchTracks = async () => {
 
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('user_tier')
+            .select('user_tier') // TODO is this correct? user_tier or user_type? is 'free' a valid value? i think it's label, artist, venue...?
             .eq('id', user.value.id)
             .single()
 
@@ -627,7 +627,7 @@ const fetchTracks = async () => {
 
     } catch (error) {
         console.error('Error fetching tracks:', error)
-        showMessage('Failed to load tracks', 'error')
+        showToast('Failed to load tracks', 'error')
     } finally {
         isLoading.value = false
     }
@@ -665,11 +665,11 @@ const validateTrack = async (trackId) => {
             body: { trackId }
         })
 
-        showMessage('Track validated successfully', 'success')
+        showToast('Track validated successfully', 'success')
         await fetchTracks()
     } catch (error) {
         console.error('Validation failed:', error)
-        showMessage('Validation failed. Please try again.', 'error')
+        showToast('Validation failed. Please try again.', 'error')
     }
 }
 
@@ -686,9 +686,9 @@ const validateSelected = async () => {
             await validateTrack(row.id)
         }
 
-        showMessage(`${selectedRows.length} tracks validated successfully`, 'success')
-    } catch (error) {
-        showMessage('Some tracks failed to validate', error)
+        showToast(`${selectedRows.length} tracks validated successfully`, 'success')
+    } catch {
+        showToast('Some tracks failed to validate', 'error')
     } finally {
         isProcessing.value = false
     }
@@ -699,7 +699,7 @@ const exportData = () => {
         gridApi.value.exportDataAsCsv({
             fileName: 'metadata-export.csv'
         })
-        showMessage('CSV exported successfully', 'success')
+        showToast('CSV exported successfully', 'success')
     }
 }
 
@@ -736,16 +736,6 @@ const hideProFeature = () => {
     proModalContent.value = {}
 }
 
-const showMessage = (text, type) => {
-    message.value = { text, type }
-    setTimeout(() => {
-        message.value = { text: '', type: '' }
-    }, 5000)
-}
-
-const clearMessage = () => {
-    message.value = { text: '', type: '' }
-}
 
 const formatDuration = (seconds) => {
     if (!seconds) return ''
