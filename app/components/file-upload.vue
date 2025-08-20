@@ -112,12 +112,23 @@
         </p>
       </div>
       
+      <ArtistValidationBanner
+        v-if="showArtistValidation && extractedMetadata?.artist"
+        :artist-name="extractedMetadata.artist"
+        :user-tier="userTier"
+        context="upload"
+        :upload-pattern="uploadPattern"
+        @alias-added="onAliasAdded"
+        @dismissed="dismissArtistValidation"
+      />
+      
       <div class="action-buttons">
         <button
           class="btn-primary"
+          :disabled="validationBlocked"
           @click="startValidation"
         >
-          Validate Metadata
+          {{ validationBlocked ? 'Artist Verification Required' : 'Validate Metadata' }}
         </button>
         <button
           class="btn-secondary"
@@ -165,6 +176,9 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { uploadAudioFile, isUploading, uploadProgress } = useFileUpload()
+const { validateArtistPermission, analyzeUploadPattern } = useArtistValidation()
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
 const fileInput = ref<HTMLInputElement>()
 const isDragOver = ref(false)
@@ -172,6 +186,10 @@ const uploadComplete = ref(false)
 const uploadError = ref<string | null>(null)
 const trackData = ref(null)
 const extractedMetadata = ref(null)
+const userTier = ref('artist')
+const showArtistValidation = ref(false)
+const validationBlocked = ref(false)
+const uploadPattern = ref(null)
 
 const triggerFileInput = () => {
   fileInput.value?.click()
@@ -206,9 +224,13 @@ const processFile = async (file: File) => {
     uploadComplete.value = true
     
     emit('upload-complete', result)
+
+    // success handled by parent component
+  
+    await checkArtistValidation()
     
-    // auto-trigger validation if enabled
-    if (props.autoValidate) {
+    // auto-trigger validation if enabled and not blocked
+    if (props.autoValidate && !validationBlocked.value) {
       nextTick(() => {
         startValidation()
       })
@@ -231,6 +253,9 @@ const resetUpload = () => {
   uploadError.value = null
   trackData.value = null
   extractedMetadata.value = null
+  showArtistValidation.value = false
+  validationBlocked.value = false
+  uploadPattern.value = null
   
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -242,6 +267,73 @@ const formatDuration = (seconds: number) => {
   const secs = seconds % 60
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
+
+const fetchUserTier = async () => {
+  try {
+    if (!user.value) return
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('user_type')
+      .eq('id', user.value.id)
+      .single()
+
+    if (error) throw error
+    userTier.value = data?.user_type || 'artist'
+  } catch (error) {
+    console.error('Error fetching user tier:', error)
+    userTier.value = 'artist'
+  }
+}
+
+const checkArtistValidation = async () => {
+  if (!extractedMetadata.value?.artist || userTier.value !== 'artist') {
+    showArtistValidation.value = false
+    validationBlocked.value = false
+    return
+  }
+
+  try {
+    const permission = await validateArtistPermission(
+      extractedMetadata.value.artist,
+      userTier.value
+    )
+
+    if (!permission.allowed && permission.requiresVerification) {
+      showArtistValidation.value = true
+      validationBlocked.value = true
+
+      uploadPattern.value = await analyzeUploadPattern()
+    } else {
+      showArtistValidation.value = false
+      validationBlocked.value = false
+    }
+  } catch (error) {
+    console.error('Error checking artist validation:', error)
+    showArtistValidation.value = false
+    validationBlocked.value = false
+  }
+}
+
+const onAliasAdded = async () => {
+  await checkArtistValidation()
+}
+
+const dismissArtistValidation = () => {
+  showArtistValidation.value = false
+}
+
+onMounted(() => {
+  if (user.value) {
+    fetchUserTier()
+  }
+})
+
+watch(user, (newUser) => {
+  if (newUser) {
+    fetchUserTier()
+  }
+})
 </script>
 
 <style scoped>
@@ -456,5 +548,15 @@ const formatDuration = (seconds: number) => {
   .action-buttons {
     flex-direction: column;
   }
+}
+
+.btn-primary:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled:hover {
+  background: #d1d5db;
 }
 </style>

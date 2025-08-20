@@ -21,7 +21,7 @@
           </button>
         </div>
       </div>
-      
+
       <div class="px-6 py-4">
         <div class="flex items-center space-x-4">
           <div class="flex-1">
@@ -32,7 +32,7 @@
               </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 class="h-2 rounded-full transition-all duration-500"
                 :class="getScoreColor(results.validationScore || 0)"
                 :style="{ width: `${results.validationScore || 0}%` }"
@@ -144,7 +144,7 @@
         </h3>
       </div>
       <div class="divide-y divide-gray-200">
-        <div 
+        <div
           v-if="!results.issues || results.issues.length === 0"
           class="px-6 py-8 text-center text-gray-500"
         >
@@ -153,15 +153,15 @@
           </div>
           <p>No issues found! Your track looks good for distribution.</p>
         </div>
-        
-        <div 
-          v-for="issue in results.issues" 
+
+        <div
+          v-for="issue in results.issues"
           :key="issue.id"
           class="px-6 py-4"
         >
           <div class="flex items-start">
             <div class="flex-shrink-0">
-              <div 
+              <div
                 class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
                 :class="getSeverityColor(issue.severity)"
               >
@@ -175,14 +175,14 @@
               <p class="text-sm text-gray-600 mt-1">
                 {{ issue.description }}
               </p>
-              <p 
+              <p
                 v-if="issue.suggestion"
                 class="text-sm text-indigo-600 mt-2"
               >
                 💡 {{ issue.suggestion }}
               </p>
               <!-- Correction CTA for fixable issues -->
-              <div 
+              <div
                 v-if="isFixableIssue(issue.issue_code)"
                 class="mt-3 p-2 bg-green-50 border border-green-200 rounded"
               >
@@ -274,22 +274,22 @@ const formatDuration = (seconds) => {
 const getRevenueImpactMessage = (score, issues) => {
   const missingISRC = issues?.some(i => i.issue_code === 'missing_isrc')
   const criticalIssues = issues?.filter(i => i.severity === 'critical').length || 0
-  
+
   if (missingISRC) {
     return 'Missing ISRC could cost you €50-200 per month in radio royalties. Generate one instantly with Pro.'
   }
-  
+
   if (criticalIssues > 0) {
     return `${criticalIssues} critical issues may prevent distribution and cost you streaming revenue.`
   }
-  
+
   return 'Some optimizations could improve your track\'s discoverability and revenue potential.'
 }
 
 const isFixableIssue = (issueCode) => {
   const fixableIssues = [
     'missing_title',
-    'missing_artist', 
+    'missing_artist',
     'missing_album',
     'missing_isrc',
     'invalid_isrc_format'
