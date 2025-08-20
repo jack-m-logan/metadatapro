@@ -290,7 +290,6 @@ const handleValidationRequest = async (trackId) => {
       validationResults.value = results
       showValidationResults.value = true
       
-      // Show success toast for validation completion
       const score = results.score || 0
       showToast(`Validation complete! Score: ${score}/100`, 'success')
     } else {

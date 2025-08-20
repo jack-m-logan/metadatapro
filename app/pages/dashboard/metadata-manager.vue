@@ -129,18 +129,21 @@
                   </svg>
                   Export CSV
                 </button>
-
-                <!-- User tier toggle for development -->
-                <button
-                  class="px-3 py-1 text-xs bg-gray-200 rounded"
-                  @click="toggleUserTier"
-                >
-                  Tier: {{ userTier }} (click to toggle)
-                </button>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Artist Validation Banner -->
+        <ArtistValidationBanner
+          v-if="showArtistValidationBanner && pendingArtistEdit"
+          :artist-name="pendingArtistEdit.artistName"
+          :user-tier="normalizedUserTier"
+          context="metadata"
+          class="mb-4"
+          @alias-added="onArtistAliasAdded"
+          @dismissed="dismissArtistValidation"
+        />
 
         <Toast
           :visible="!!toastMessage.text"
@@ -213,9 +216,7 @@
             @click.stop
           >
             <div class="text-center">
-              <div
-                class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 mb-4"
-              >
+              <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 mb-4">
                 <span class="text-2xl">⭐</span>
               </div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">
@@ -252,19 +253,15 @@ import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import Toast from '/components/toast-messages.vue'
+import ArtistValidationBanner from '/components/ArtistValidationBanner.vue'
+
 const { showToast, clearToast, message: toastMessage } = useToast()
+const { validateArtistPermission, getVerifiedArtistNames } = useArtistValidation()
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
-const userTier = ref('free') // change to 'pro' to test Pro features
-
-const toggleUserTier = () => {
-    userTier.value = userTier.value === 'free' ? 'pro' : 'free'
-    console.log('User tier changed to:', userTier.value)
-}
-
 definePageMeta({
-    middleware: 'auth'
+  middleware: 'auth'
 })
 
 const supabase = useSupabaseClient()
@@ -277,6 +274,12 @@ const isProcessing = ref(false)
 const searchQuery = ref('')
 const selectedColumnSet = ref('basic')
 const selectedRowCount = ref(0)
+const userTier = ref('free')
+
+// Artist validation state
+const verifiedArtists = ref([])
+const showArtistValidationBanner = ref(false)
+const pendingArtistEdit = ref(null)
 
 // UI state
 const showingProModal = ref(false)
@@ -286,425 +289,463 @@ const proModalContent = ref({})
 const gridApi = ref(null)
 const columnApi = ref(null)
 
+// Computed values
+const normalizedUserTier = computed(() => {
+  // Map 'free' to 'artist' for validation purposes
+  return userTier.value === 'free' ? 'artist' : userTier.value
+})
+
+
 const columnTabs = ref([
-    { label: 'Basic', value: 'basic', isPro: false },
-    { label: 'Technical', value: 'technical', isPro: false },
-    { label: 'Rights', value: 'rights', isPro: true },
-    { label: 'All Fields', value: 'all', isPro: true }
+  { label: 'Basic', value: 'basic', isPro: false },
+  { label: 'Technical', value: 'technical', isPro: false },
+  { label: 'Rights', value: 'rights', isPro: true },
+  { label: 'All Fields', value: 'all', isPro: true }
 ])
 
 const renderScoreBadge = (score) => {
-    const colorClass = score >= 80 ? 'bg-green-100 text-green-800' :
-        score >= 60 ? 'bg-yellow-100 text-yellow-800' :
-            'bg-red-100 text-red-800'
-    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${score}/100</span>`
+  const colorClass = score >= 80 ? 'bg-green-100 text-green-800' :
+    score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+      'bg-red-100 text-red-800'
+  return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${score}/100</span>`
 }
 
 const renderStatusBadge = (status) => {
-    const statusClasses = {
-        'completed': 'bg-green-100 text-green-800',
-        'processing': 'bg-yellow-100 text-yellow-800', 
-        'error': 'bg-red-100 text-red-800',
-        'failed': 'bg-red-100 text-red-800'
-    }
-    const statusTexts = {
-        'completed': 'Validated',
-        'processing': 'Processing',
-        'error': 'Error', 
-        'failed': 'Error',
-        'pending': 'Pending'
-    }
-    const colorClass = statusClasses[status] || 'bg-gray-100 text-gray-800'
-    const text = statusTexts[status] || 'Unknown'
-    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`
+  const statusClasses = {
+    'completed': 'bg-green-100 text-green-800',
+    'processing': 'bg-yellow-100 text-yellow-800',
+    'error': 'bg-red-100 text-red-800',
+    'failed': 'bg-red-100 text-red-800'
+  }
+  const statusTexts = {
+    'completed': 'Validated',
+    'processing': 'Processing',
+    'error': 'Error',
+    'failed': 'Error',
+    'pending': 'Pending'
+  }
+  const colorClass = statusClasses[status] || 'bg-gray-100 text-gray-800'
+  const text = statusTexts[status] || 'Unknown'
+  return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`
 }
 
 const getColumnDefs = (columnSet = 'basic') => {
-    const baseColumns = [
-        {
-            headerName: '',
-            field: 'checkbox',
-            headerCheckboxSelection: true,
-            headerCheckboxSelectionFilteredOnly: true,
-            checkboxSelection: true,
-            headerCheckboxSelection: true,
-            width: 50,
-            pinned: 'left',
-            lockPosition: 'left',
-            suppressMenu: true,
-            sortable: false,
-            filter: false,
-            cellStyle: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0'
-            },
-            headerClass: 'checkbox-header',
-        },
-        {
-            headerName: 'Track',
-            field: 'title',
-            editable: true,
-            cellRenderer: (params) => {
-                return params.value ||
-                    params.data.original_metadata?.title ||
-                    params.data.filename ||
-                    'Unknown Track'
-            },
-        },
-        {
-            headerName: 'Duration',
-            field: 'duration_seconds',
-            width: 100,
-            editable: false,
-            valueFormatter: (params) => formatDuration(params.value)
-        },
-        {
-            headerName: 'File Size',
-            field: 'file_size',
-            width: 100,
-            editable: false,
-            valueFormatter: (params) => {
-                if (!params.value) return ''
-                const size = params.value / 1024 / 1024 // Convert to MB
-                return `${size.toFixed(2)} MB`
-            }
-        },
-        {
-            headerName: 'Artist',
-            field: 'artist',
-            editable: true,
-            cellRenderer: (params) => {
-                const artist = params.value || params.data.original_metadata?.artist
-                return artist || '<span class="text-gray-500 italic">Click to add artist</span>'
-            }
-        },
-        {
-            headerName: 'Album',
-            field: 'album',
-            editable: true,
-            cellRenderer: (params) => {
-                const album = params.value || params.data.original_metadata?.album
-                return album || '<span class="text-gray-500 italic">Click to add album</span>'
-            }
-        },
-        {
-            headerName: 'ISRC',
-            field: 'isrc',
-            width: 120,
-            editable: true,
-            cellRenderer: (params) => {
-                if (params.value) {
-                    return params.value
-                } else {
-                    return '<span class="text-gray-500 italic">Click to add ISRC</span>'
-                }
-            }
+  const baseColumns = [
+    {
+      headerName: '',
+      field: 'checkbox',
+      headerCheckboxSelection: true,
+      headerCheckboxSelectionFilteredOnly: true,
+      checkboxSelection: true,
+      width: 50,
+      pinned: 'left',
+      lockPosition: 'left',
+      suppressMenu: true,
+      sortable: false,
+      filter: false,
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0'
+      },
+      headerClass: 'checkbox-header',
+    },
+    {
+      headerName: 'Track',
+      field: 'title',
+      editable: true,
+      cellRenderer: (params) => {
+        return params.value ||
+          params.data.original_metadata?.title ||
+          params.data.filename ||
+          'Unknown Track'
+      },
+    },
+    {
+      headerName: 'Duration',
+      field: 'duration_seconds',
+      width: 100,
+      editable: false,
+      valueFormatter: (params) => formatDuration(params.value)
+    },
+    {
+      headerName: 'File Size',
+      field: 'file_size',
+      width: 100,
+      editable: false,
+      valueFormatter: (params) => {
+        if (!params.value) return ''
+        const size = params.value / 1024 / 1024
+        return `${size.toFixed(2)} MB`;
+      }
+    },
+    {
+      headerName: 'Artist',
+      field: 'artist',
+      editable: true,
+      cellRenderer: (params) => {
+        const artist = params.value || params.data.original_metadata?.artist
+
+        if (!artist) {
+          return '<span class="text-gray-500 italic">Click to add artist</span>'
         }
-    ]
 
-    const technicalColumns = [
-        {
-            headerName: 'Format',
-            field: 'file_format',
-            width: 80,
-            editable: false
-        },
-        {
-            headerName: 'Sample Rate',
-            field: 'sample_rate',
-            width: 100,
-            editable: false,
-            valueFormatter: (params) => params.value ? `${params.value} Hz` : ''
-        },
-        {
-            headerName: 'Bit Depth',
-            field: 'bit_depth',
-            width: 90,
-            editable: false,
-            valueFormatter: (params) => params.value ? `${params.value} bit` : ''
+        if (normalizedUserTier.value !== 'artist') {
+          return `<span>${artist}</span>`
         }
-    ]
 
-    const rightsColumns = [
-        {
-            headerName: 'Publisher',
-            field: 'publisher',
-            width: 150,
-            editable: true,
-            cellRenderer: (params) => {
-                if (columnSet === 'all') {
-                    return params.value || '<span class="text-gray-500 italic">Click to add</span>'
-                } else {
-                    return '<span class="text-gray-400">🔒 Pro Feature</span>'
-                }
-            }
-        },
-        {
-            headerName: 'Songwriter',
-            field: 'songwriter',
-            width: 150,
-            editable: columnSet === 'all',
-            cellRenderer: (params) => {
-                if (columnSet === 'all') {
-                    return params.value || '<span class="text-gray-500 italic">Click to add</span>'
-                } else {
-                    return '<span class="text-gray-400">🔒 Pro Feature</span>'
-                }
-            }
+        const verified = isArtistVerified(artist)
+        const statusIcon = verified ? '✅' : '⚠️'
+        const statusColor = verified ? 'text-green-600' : 'text-orange-500'
+
+        return `<div class="flex items-center justify-between w-full">
+                <span>${artist}</span>
+                <span class="${statusColor} text-sm ml-2">${statusIcon}</span>
+            </div>`
+      },
+      cellEditorParams: {
+        maxLength: 100
+      }
+    },
+    {
+      headerName: 'Album',
+      field: 'album',
+      editable: true,
+      cellRenderer: (params) => {
+        const album = params.value || params.data.original_metadata?.album
+        return album || '<span class="text-gray-500 italic">Click to add album</span>'
+      }
+    },
+    {
+      headerName: 'ISRC',
+      field: 'isrc',
+      width: 120,
+      editable: true,
+      cellRenderer: (params) => {
+        if (params.value) {
+          return params.value
+        } else {
+          return '<span class="text-gray-500 italic">Click to add ISRC</span>'
         }
-    ]
-
-    const endColumns = [
-        {
-            headerName: 'Score',
-            field: 'validation_score',
-            width: 80,
-            editable: false,
-            cellRenderer: (params) => {
-                if (params.value !== null) {
-                    return renderScoreBadge(params.value)
-                }
-                return '<span class="text-gray-500">Not validated</span>'
-            }
-        },
-        {
-            headerName: 'Status',
-            field: 'validation_status',
-            width: 100,
-            editable: false,
-            cellRenderer: (params) => {
-                return renderStatusBadge(params.value)
-            }
-        },
-        {
-            headerName: 'Actions',
-            width: 80,
-            editable: false,
-            cellStyle: { textAlign: 'center' },
-            cellRenderer: (params) => {
-                const trackId = params.data.id
-                return `<button class="text-gray-600 hover:text-gray-900 text-xs font-medium" onclick="window.showTrackDetails('${trackId}')">View</button>`
-            }
-        }
-    ]
-
-    // Build column set based on selection
-    let columns = [...baseColumns]
-
-    if (columnSet === 'technical' || columnSet === 'rights' || columnSet === 'all') {
-        columns = [...columns, ...technicalColumns]
+      }
     }
+  ]
 
-    if (columnSet === 'rights' || columnSet === 'all') {
-        columns = [...columns, ...rightsColumns]
+  const technicalColumns = [
+    {
+      headerName: 'Format',
+      field: 'file_format',
+      width: 80,
+      editable: false
+    },
+    {
+      headerName: 'Sample Rate',
+      field: 'sample_rate',
+      width: 100,
+      editable: false,
+      valueFormatter: (params) => params.value ? `${params.value} Hz` : ''
+    },
+    {
+      headerName: 'Bit Depth',
+      field: 'bit_depth',
+      width: 90,
+      editable: false,
+      valueFormatter: (params) => params.value ? `${params.value} bit` : ''
     }
+  ]
 
-    columns = [...columns, ...endColumns]
+  const rightsColumns = [
+    {
+      headerName: 'Publisher',
+      field: 'publisher',
+      width: 150,
+      editable: true,
+      cellRenderer: (params) => {
+        if (columnSet === 'all') {
+          return params.value || '<span class="text-gray-500 italic">Click to add</span>'
+        } else {
+          return '<span class="text-gray-400">🔒 Pro Feature</span>'
+        }
+      }
+    },
+    {
+      headerName: 'Songwriter',
+      field: 'songwriter',
+      width: 150,
+      editable: columnSet === 'all',
+      cellRenderer: (params) => {
+        if (columnSet === 'all') {
+          return params.value || '<span class="text-gray-500 italic">Click to add</span>'
+        } else {
+          return '<span class="text-gray-400">🔒 Pro Feature</span>'
+        }
+      }
+    }
+  ]
 
-    return columns
+  const endColumns = [
+    {
+      headerName: 'Score',
+      field: 'validation_score',
+      width: 80,
+      editable: false,
+      cellRenderer: (params) => {
+        if (params.value !== null) {
+          return renderScoreBadge(params.value)
+        }
+        return '<span class="text-gray-500">Not validated</span>'
+      }
+    },
+    {
+      headerName: 'Status',
+      field: 'validation_status',
+      width: 100,
+      editable: false,
+      cellRenderer: (params) => {
+        return renderStatusBadge(params.value)
+      }
+    },
+    {
+      headerName: 'Actions',
+      width: 80,
+      editable: false,
+      cellStyle: { textAlign: 'center' },
+      cellRenderer: (params) => {
+        const trackId = params.data.id
+        return `<button class="text-gray-600 hover:text-gray-900 text-xs font-medium" onclick="window.showTrackDetails('${trackId}')">View</button>`
+      }
+    }
+  ]
+
+  // Build column set based on selection
+  let columns = [...baseColumns]
+
+  if (columnSet === 'technical' || columnSet === 'rights' || columnSet === 'all') {
+    columns = [...columns, ...technicalColumns]
+  }
+
+  if (columnSet === 'rights' || columnSet === 'all') {
+    columns = [...columns, ...rightsColumns]
+  }
+
+  columns = [...columns, ...endColumns]
+
+  return columns
 }
 
 const onCellValueChanged = async (params) => {
-    const { data, newValue, oldValue, colDef } = params
+  const { data, newValue, oldValue, colDef } = params
 
-    // Normalize values for comparison
-    const normalizeValue = (val) => {
-        if (val === null || val === undefined || val === '') return null
-        return typeof val === 'string' ? val.trim() : val
-    }
+  // Normalize values for comparison
+  const normalizeValue = (val) => {
+    if (val === null || val === undefined || val === '') return null
+    return typeof val === 'string' ? val.trim() : val
+  }
 
-    const normalizedNew = normalizeValue(newValue)
-    const normalizedOld = normalizeValue(oldValue)
+  const normalizedNew = normalizeValue(newValue)
+  const normalizedOld = normalizeValue(oldValue)
 
-    // Only save if value actually changed
-    if (normalizedNew === normalizedOld) {
-        return
-    }
+  // Only proceed if value actually changed
+  if (normalizedNew === normalizedOld) {
+    return
+  }
 
-    // ISRC validation
-    if (colDef.field === 'isrc' && normalizedNew) {
-        const isrcRegex = /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/
-        if (!isrcRegex.test(normalizedNew.toUpperCase())) {
-            showToast('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
-            // Revert the cell to old value
-            data.isrc = normalizedOld
-            params.api.refreshCells({ rowNodes: [params.node] })
-            return
+  if (colDef.field === 'artist' && normalizedNew) {
+    if (normalizedUserTier.value === 'artist') {
+      const permission = await validateArtistPermission(normalizedNew, normalizedUserTier.value)
+
+      if (!permission.allowed && permission.requiresVerification) {
+        pendingArtistEdit.value = {
+          artistName: normalizedNew,
+          trackId: data.id,
+          originalValue: normalizedOld
         }
-        // to uppercase for valid ISRCs
-        normalizedNew = normalizedNew.toUpperCase()
-    }
+        showArtistValidationBanner.value = true
 
-    try {
-        const { error } = await supabase
-            .from('tracks')
-            .update({ [colDef.field]: normalizedNew })
-            .eq('id', data.id)
-
-        if (error) throw error
-
-        // Update local data
-        data[colDef.field] = normalizedNew
-
-        showToast(`${colDef.headerName} updated successfully`, 'success')
-    } catch (error) {
-        console.error('Error saving edit:', error)
-        showToast('Failed to save changes', 'error')
+        data.artist = normalizedOld
         params.api.refreshCells({ rowNodes: [params.node] })
+        return
+      }
     }
+  }
+
+  // ISRC validation
+  if (colDef.field === 'isrc' && normalizedNew) {
+    const isrcRegex = /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/
+    if (!isrcRegex.test(normalizedNew.toUpperCase())) {
+      showToast('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
+      data.isrc = normalizedOld
+      params.api.refreshCells({ rowNodes: [params.node] })
+      return
+    }
+    normalizedNew = normalizedNew.toUpperCase()
+  }
+
+  try {
+    const { error } = await supabase
+      .from('tracks')
+      .update({ [colDef.field]: normalizedNew })
+      .eq('id', data.id)
+
+    if (error) throw error
+
+    // Update local data
+    data[colDef.field] = normalizedNew
+
+    showToast(`${colDef.headerName} updated successfully`, 'success')
+  } catch (error) {
+    console.error('Error saving edit:', error)
+    showToast('Failed to save changes', 'error')
+    params.api.refreshCells({ rowNodes: [params.node] })
+  }
 }
 
 const columnDefs = ref(getColumnDefs('basic'))
 
 const defaultColDef = {
-    sortable: true,
-    filter: true,
-    resizable: true,
-    minWidth: 80,
+  sortable: true,
+  filter: true,
+  resizable: true,
+  minWidth: 80,
 }
 
 const gridOptions = {
-    theme: 'legacy',
-    rowSelection: {
-        mode: 'multiRow',
-        checkboxes: false,
-        headerCheckbox: false,
-        enableClickSelection: false
-    },
-    stopEditingWhenCellsLoseFocus: true,
-    onCellValueChanged: onCellValueChanged,
-    pagination: true,
-    paginationAutoPageSize: true,
-    suppressHorizontalScroll: false,
-    suppressPaginationPanel: false
+  theme: 'legacy',
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false,
+    enableClickSelection: false
+  },
+  stopEditingWhenCellsLoseFocus: true,
+  onCellValueChanged: onCellValueChanged,
+  pagination: true,
+  paginationAutoPageSize: true,
+  suppressHorizontalScroll: false,
+  suppressPaginationPanel: false
 }
 
 // Computed
 const revenueImpact = computed(() => {
-    const missingISRC = tracks.value.filter(t => !t.isrc).length
-    const lowQuality = tracks.value.filter(t => t.validation_score && t.validation_score < 60).length
+  const missingISRC = tracks.value.filter(t => !t.isrc).length
+  const lowQuality = tracks.value.filter(t => t.validation_score && t.validation_score < 60).length
 
-    return {
-        missingISRC,
-        lowQuality,
-        potentialValue: (missingISRC * 50) + (lowQuality * 20)
-    }
+  return {
+    missingISRC,
+    lowQuality,
+    potentialValue: (missingISRC * 50) + (lowQuality * 20)
+  }
 })
 
 const revenueImpactMessage = computed(() => {
-    const items = []
-    if (revenueImpact.value.missingISRC > 0) {
-        items.push(`${revenueImpact.value.missingISRC} tracks missing ISRC - losing radio royalties`)
-    }
-    if (revenueImpact.value.lowQuality > 0) {
-        items.push(`${revenueImpact.value.lowQuality} tracks with quality issues - affecting discoverability`)
-    }
-    return items
+  const items = []
+  if (revenueImpact.value.missingISRC > 0) {
+    items.push(`${revenueImpact.value.missingISRC} tracks missing ISRC - losing radio royalties`)
+  }
+  if (revenueImpact.value.lowQuality > 0) {
+    items.push(`${revenueImpact.value.lowQuality} tracks with quality issues - affecting discoverability`)
+  }
+  return items
 })
 
 const fetchTracks = async () => {
-    try {
-        isLoading.value = true
+  try {
+    isLoading.value = true
 
-        const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('user_tier') // TODO is this correct? user_tier or user_type? is 'free' a valid value? i think it's label, artist, venue...?
-            .eq('id', user.value.id)
-            .single()
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('user_type')
+      .eq('id', user.value.id)
+      .single()
 
-        userTier.value = profile?.user_tier || 'free'
+    userTier.value = profile?.user_type || 'free'
 
-        const { data, error } = await supabase
-            .from('tracks')
-            .select('*')
-            .eq('user_id', user.value.id)
-            .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('tracks')
+      .select('*')
+      .eq('user_id', user.value.id)
+      .order('created_at', { ascending: false })
 
-        if (error) throw error
-        tracks.value = data || []
+    if (error) throw error
+    tracks.value = data || []
 
-    } catch (error) {
-        console.error('Error fetching tracks:', error)
-        showToast('Failed to load tracks', 'error')
-    } finally {
-        isLoading.value = false
-    }
+  } catch (error) {
+    console.error('Error fetching tracks:', error)
+    showToast('Failed to load tracks', 'error')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const onGridReady = (params) => {
-    gridApi.value = params.api
-    columnApi.value = params.columnApi
+  gridApi.value = params.api
+  columnApi.value = params.columnApi
 
-    window.validateTrack = validateTrack
-    window.showProFeature = showProFeature
-    window.showTrackDetails = showTrackDetails
+  window.validateTrack = validateTrack
+  window.showProFeature = showProFeature
+  window.showTrackDetails = showTrackDetails
 }
 
 const onSelectionChanged = () => {
-    if (gridApi.value) {
-        selectedRowCount.value = gridApi.value.getSelectedRows().length
-    }
+  if (gridApi.value) {
+    selectedRowCount.value = gridApi.value.getSelectedRows().length
+  }
 }
 
 const onFilterTextBoxChanged = () => {
-    if (gridApi.value) {
-        gridApi.value.setQuickFilter(searchQuery.value)
-    }
+  if (gridApi.value) {
+    gridApi.value.setQuickFilter(searchQuery.value)
+  }
 }
 
-// const updateColumnSet = () => {
-//     columnDefs.value = getColumnDefs(selectedColumnSet.value)
-// }
-
 const validateTrack = async (trackId) => {
-    try {
-        await $fetch('/api/validation/validate-track', {
-            method: 'POST',
-            body: { trackId }
-        })
+  try {
+    await $fetch('/api/validation/validate-track', {
+      method: 'POST',
+      body: { trackId }
+    })
 
-        showToast('Track validated successfully', 'success')
-        await fetchTracks()
-    } catch (error) {
-        console.error('Validation failed:', error)
-        showToast('Validation failed. Please try again.', 'error')
-    }
+    showToast('Track validated successfully', 'success')
+    await fetchTracks()
+  } catch (error) {
+    console.error('Validation failed:', error)
+    showToast('Validation failed. Please try again.', 'error')
+  }
 }
 
 const validateSelected = async () => {
-    if (!gridApi.value) return
+  if (!gridApi.value) return
 
-    const selectedRows = gridApi.value.getSelectedRows()
-    if (selectedRows.length === 0) return
+  const selectedRows = gridApi.value.getSelectedRows()
+  if (selectedRows.length === 0) return
 
-    try {
-        isProcessing.value = true
+  try {
+    isProcessing.value = true
 
-        for (const row of selectedRows) {
-            await validateTrack(row.id)
-        }
-
-        showToast(`${selectedRows.length} tracks validated successfully`, 'success')
-    } catch {
-        showToast('Some tracks failed to validate', 'error')
-    } finally {
-        isProcessing.value = false
+    for (const row of selectedRows) {
+      await validateTrack(row.id)
     }
+
+    showToast(`${selectedRows.length} tracks validated successfully`, 'success')
+  } catch {
+    showToast('Some tracks failed to validate', 'error')
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 const exportData = () => {
-    if (gridApi.value) {
-        gridApi.value.exportDataAsCsv({
-            fileName: 'metadata-export.csv'
-        })
-        showToast('CSV exported successfully', 'success')
-    }
+  if (gridApi.value) {
+    gridApi.value.exportDataAsCsv({
+      fileName: 'metadata-export.csv'
+    })
+    showToast('CSV exported successfully', 'success')
+  }
 }
 
 const showTrackDetails = (trackId) => {
-    navigateTo(`/dashboard/tracks/${trackId}`)
+  navigateTo(`/dashboard/tracks/${trackId}`)
 }
 
 // const showProFeature = (feature) => {
@@ -732,71 +773,148 @@ const showTrackDetails = (trackId) => {
 // }
 
 const hideProFeature = () => {
-    showingProModal.value = false
-    proModalContent.value = {}
+  showingProModal.value = false
+  proModalContent.value = {}
 }
 
 
 const formatDuration = (seconds) => {
-    if (!seconds) return ''
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.round(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  if (!seconds) return ''
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const isArtistVerified = (artistName) => {
+  if (!artistName) return false
+  const normalizedName = artistName.toLowerCase().trim()
+  const isVerified = verifiedArtists.value.includes(normalizedName)
+
+  return isVerified
+}
+
+const loadVerifiedArtists = async () => {
+  try {
+    const artists = await getVerifiedArtistNames()
+    verifiedArtists.value = artists.map(artist => artist.toLowerCase().trim())
+    console.log('Loaded verified artists:', verifiedArtists.value)
+  } catch (error) {
+    console.error('Error loading verified artists:', error)
+    verifiedArtists.value = []
+  }
+}
+
+const onArtistAliasAdded = async (artistName) => {
+  console.log('Artist alias added:', artistName)
+
+  await loadVerifiedArtists()
+
+  if (pendingArtistEdit.value && pendingArtistEdit.value.artistName === artistName) {
+    const trackId = pendingArtistEdit.value.trackId
+
+    try {
+      const { error } = await supabase
+        .from('tracks')
+        .update({ artist: artistName })
+        .eq('id', trackId)
+
+      if (error) throw error
+
+      const track = tracks.value.find(t => t.id === trackId)
+      if (track) {
+        track.artist = artistName
+      }
+
+      showToast(`Artist "${artistName}" updated successfully`, 'success')
+    } catch (error) {
+      console.error('Error updating artist:', error)
+      showToast('Failed to update artist', 'error')
+    }
+  }
+
+  if (gridApi.value) {
+    gridApi.value.refreshCells()
+  }
+
+  showArtistValidationBanner.value = false
+  pendingArtistEdit.value = null
+}
+
+const dismissArtistValidation = () => {
+  showArtistValidationBanner.value = false
+  pendingArtistEdit.value = null
 }
 
 // Lifecycle
 onMounted(async () => {
-    if (user.value) {
-        await fetchTracks()
-    }
+  if (user.value) {
+    await Promise.all([
+      fetchTracks(),
+      loadVerifiedArtists()
+    ])
+  }
 })
 
 // Auth check
 watchEffect(() => {
-    if (user.value === null) {
-        navigateTo('/auth/user-login')
-    }
+  if (user.value === null) {
+    navigateTo('/auth/user-login')
+  }
 })
 
-const selectColumnSet = (columnSet) => {
-    if ((columnSet === 'rights' || columnSet === 'all') && userTier.value !== 'pro') {
-        showProFeature('advanced_columns')
-        return
-    }
+watch(verifiedArtists, () => {
+  if (gridApi.value) {
+    gridApi.value.refreshCells()
+  }
+}, { deep: true })
 
-    selectedColumnSet.value = columnSet
-    columnDefs.value = getColumnDefs(columnSet)
-    if (gridApi.value) {
-        gridApi.value.setGridOption('columnDefs', columnDefs.value)
-    }
+watch(normalizedUserTier, () => {
+  columnDefs.value = getColumnDefs(selectedColumnSet.value)
+  if (gridApi.value) {
+    gridApi.value.setGridOption('columnDefs', columnDefs.value)
+  }
+})
+
+
+const selectColumnSet = (columnSet) => {
+  if ((columnSet === 'rights' || columnSet === 'all') && userTier.value !== 'pro') {
+    showProFeature('advanced_columns')
+    return
+  }
+
+  selectedColumnSet.value = columnSet
+  columnDefs.value = getColumnDefs(columnSet)
+  if (gridApi.value) {
+    gridApi.value.setGridOption('columnDefs', columnDefs.value)
+  }
 }
 
 const showProFeature = (feature) => {
-    const features = {
-        advanced_columns: {
-            title: 'Advanced Columns',
-            description: 'Unlock Rights & Publishing fields, and view all metadata columns with Pro!'
-        }
+  const features = {
+    advanced_columns: {
+      title: 'Advanced Columns',
+      description: 'Unlock Rights & Publishing fields, and view all metadata columns with Pro!'
     }
+  }
 
-    proModalContent.value = features[feature]
-    showingProModal.value = true
+  proModalContent.value = features[feature]
+  showingProModal.value = true
 }
 </script>
 
 <style>
 .ag-theme-alpine {
-    --ag-header-background-color: #f9fafb;
-    --ag-header-foreground-color: #374151;
-    --ag-border-color: #e5e7eb;
-    --ag-row-hover-color: #f3f4f6;
-    --ag-selected-row-background-color: #eff6ff;
+  --ag-header-background-color: #f9fafb;
+  --ag-header-foreground-color: #374151;
+  --ag-border-color: #e5e7eb;
+  --ag-row-hover-color: #f3f4f6;
+  --ag-selected-row-background-color: #eff6ff;
 }
 
 .ag-theme-alpine .ag-header-cell-text {
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 </style>
