@@ -90,10 +90,10 @@
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                             :class="tierBadgeClass"
                           >
-                            {{ profileForm.user_tier?.toUpperCase() || 'ARTIST' }}
+                            {{ profileForm.user_type?.toUpperCase() || 'ARTIST' }}
                           </span>
                           <button
-                            v-if="profileForm.user_tier === 'artist'"
+                            v-if="profileForm.user_type === 'artist'"
                             type="button"
                             class="text-sm text-purple-600 hover:text-purple-700 font-medium"
                             @click="upgradeAccount"
@@ -129,7 +129,7 @@
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div
                       class="border rounded-lg p-4"
-                      :class="profileForm.user_tier === 'artist' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
+                      :class="profileForm.user_type === 'artist' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
                     >
                       <h3 class="font-medium text-gray-900 mb-2">
                         Artist
@@ -141,7 +141,7 @@
                         <li>✗ Unlimited artists</li>
                       </ul>
                       <p
-                        v-if="profileForm.user_tier === 'artist'"
+                        v-if="profileForm.user_type === 'artist'"
                         class="text-xs text-indigo-600 mt-2 font-medium"
                       >
                         Current plan
@@ -150,7 +150,7 @@
 
                     <div
                       class="border rounded-lg p-4"
-                      :class="profileForm.user_tier === 'label' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
+                      :class="profileForm.user_type === 'label' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
                     >
                       <h3 class="font-medium text-gray-900 mb-2">
                         Label
@@ -163,7 +163,7 @@
                       </ul>
                       <div class="mt-2">
                         <p
-                          v-if="profileForm.user_tier === 'label'"
+                          v-if="profileForm.user_type === 'label'"
                           class="text-xs text-indigo-600 font-medium"
                         >
                           Current plan
@@ -181,7 +181,7 @@
 
                     <div
                       class="border rounded-lg p-4"
-                      :class="profileForm.user_tier === 'venue' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
+                      :class="profileForm.user_type === 'venue' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
                     >
                       <h3 class="font-medium text-gray-900 mb-2">
                         Venue
@@ -194,7 +194,7 @@
                       </ul>
                       <div class="mt-2">
                         <p
-                          v-if="profileForm.user_tier === 'venue'"
+                          v-if="profileForm.user_type === 'venue'"
                           class="text-xs text-indigo-600 font-medium"
                         >
                           Current plan
@@ -231,7 +231,7 @@
                       </p>
                     </div>
                     <button
-                      v-if="profileForm.user_tier === 'artist'"
+                      v-if="profileForm.user_type === 'artist'"
                       class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                       @click="showAddAliasModal = true"
                     >
@@ -242,7 +242,7 @@
 
                 <div class="px-6 py-4">
                   <div
-                    v-if="profileForm.user_tier !== 'artist'"
+                    v-if="profileForm.user_type !== 'artist'"
                     class="text-center py-8"
                   >
                     <svg
@@ -262,7 +262,7 @@
                       Unlimited Artist Management
                     </h3>
                     <p class="text-gray-600 text-sm">
-                      Your {{ profileForm.user_tier }} tier can manage any artist without verification requirements.
+                      Your {{ profileForm.user_type }} tier can manage any artist without verification requirements.
                     </p>
                   </div>
 
@@ -643,52 +643,12 @@
           Add Artist Alias
         </h3>
 
-        <form @submit.prevent="addAlias">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Artist Name
-            </label>
-            <input
-              v-model="aliasForm.artistName"
-              type="text"
-              required
-              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Enter artist name"
-            >
-          </div>
-
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Verification Evidence (Optional)
-            </label>
-            <input
-              v-model="aliasForm.evidence"
-              type="url"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Social media or streaming profile URL"
-            >
-            <p class="text-xs text-gray-500 mt-1">
-              Provide a link to verify your identity as this artist
-            </p>
-          </div>
-
-          <div class="flex justify-end space-x-3">
-            <button
-              type="button"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              @click="showAddAliasModal = false"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-              :disabled="isAddingAlias"
-            >
-              {{ isAddingAlias ? 'Adding...' : 'Add Alias' }}
-            </button>
-          </div>
-        </form>
+        <ArtistAliasForm
+          ref="artistAliasForm"
+          :is-submitting="isAddingAlias"
+          @submit="addAlias"
+          @cancel="showAddAliasModal = false"
+        />
       </div>
     </div>
   </div>
@@ -697,6 +657,7 @@
 <script setup lang="ts">
 import Toast from '/components/toast-messages.vue'
 import SidebarNavigation from '/components/sidebar-navigation.vue'
+import ArtistAliasForm from '/components/ArtistAliasForm.vue'
 
 definePageMeta({
   middleware: 'auth'
@@ -750,18 +711,16 @@ const profileForm = ref({
   full_name: '',
   email: '',
   primary_artist_name: '',
-  user_tier: 'artist'
+  user_type: 'artist'
 })
 
-const aliasForm = ref({
-  artistName: '',
-  evidence: ''
-})
+// Ref to the ArtistAliasForm component
+const artistAliasForm = ref()
 
 const message = ref({ text: '', type: '' })
 
 const tierBadgeClass = computed(() => {
-  const tier = profileForm.value.user_tier
+  const tier = profileForm.value.user_type || 'artist'
   const classes = {
     artist: 'bg-blue-100 text-blue-800',
     label: 'bg-purple-100 text-purple-800',
@@ -787,7 +746,7 @@ const fetchUserProfile = async () => {
       full_name: data.full_name || '',
       email: user.value.email || '',
       primary_artist_name: data.primary_artist_name || '',
-      user_tier: data.user_tier || 'artist'
+      user_type: data.user_type || 'artist'
     }
 
     await loadVerifiedArtists()
@@ -801,7 +760,7 @@ const fetchUserProfile = async () => {
 
 const loadVerifiedArtists = async () => {
   try {
-    if (profileForm.value.user_tier === 'artist') {
+    if (profileForm.value.user_type === 'artist') {
       const artistsData = await getVerifiedArtistsWithDetails()
       verifiedArtistsData.value = artistsData
 
@@ -866,21 +825,25 @@ const saveProfile = async () => {
   }
 }
 
-const addAlias = async () => {
+const addAlias = async (formData: { artistName: string, evidence: string }) => {
   try {
     isAddingAlias.value = true
 
     const result = await addArtistAlias(
-      aliasForm.value.artistName,
-      aliasForm.value.evidence || undefined
+      formData.artistName,
+      formData.evidence
     )
 
     if (result) {
       await loadVerifiedArtists()
-
       showAddAliasModal.value = false
-      aliasForm.value = { artistName: '', evidence: '' }
-      showMessage('Artist alias added successfully', 'success')
+      
+      // Reset the form
+      if (artistAliasForm.value?.resetForm) {
+        artistAliasForm.value.resetForm()
+      }
+      
+      showMessage(`"${formData.artistName}" added as verified artist alias!`, 'success')
     }
   } catch (error) {
     console.error('Error adding alias:', error)
@@ -900,7 +863,7 @@ const removeAlias = async (artistName: string) => {
   try {
     await removeArtistAlias(artistName)
     await loadVerifiedArtists()
-    showMessage('Artist alias removed', 'success')
+    showMessage(`"${artistName}" removed from verified artists`, 'success')
   } catch (error) {
     console.error('Error removing alias:', error)
     showMessage(error.message || 'Failed to remove artist alias', 'error')
@@ -912,7 +875,7 @@ const setPrimary = async (artistName: string) => {
     await setPrimaryArtist(artistName)
     profileForm.value.primary_artist_name = artistName
     await loadVerifiedArtists()
-    showMessage('Primary artist updated', 'success')
+    showMessage(`"${artistName}" set as primary artist`, 'success')
   } catch (error) {
     console.error('Error setting primary artist:', error)
     showMessage(error.message || 'Failed to set primary artist', 'error')
