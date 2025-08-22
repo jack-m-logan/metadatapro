@@ -40,14 +40,14 @@
               Validate Your Music Metadata
             </h2>
             <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-              Ensure your tracks are ready for distribution across all major platforms 
+              Ensure your tracks are ready for distribution across all major platforms
               and meet requirements for royalty collection organizations.
             </p>
           </div>
 
           <div class="bg-white shadow rounded-lg overflow-hidden">
             <div class="px-6 py-8">
-              <FileUpload 
+              <FileUpload
                 :auto-validate="false"
                 @upload-complete="handleUploadComplete"
                 @validation-requested="handleValidationRequest"
@@ -87,7 +87,7 @@
                       </p>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-start">
                     <div class="flex-shrink-0">
                       <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
@@ -113,7 +113,7 @@
                       </p>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-start">
                     <div class="flex-shrink-0">
                       <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
@@ -140,7 +140,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="space-y-4">
                   <div class="flex items-start">
                     <div class="flex-shrink-0">
@@ -167,7 +167,7 @@
                       </p>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-start">
                     <div class="flex-shrink-0">
                       <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
@@ -193,7 +193,7 @@
                       </p>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-start">
                     <div class="flex-shrink-0">
                       <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
@@ -226,7 +226,7 @@
         </div>
 
         <div v-if="showValidationResults && validationResults && validationResults.success">
-          <ValidationResults 
+          <ValidationResults
             :results="validationResults"
             @back-to-upload="resetValidation"
           />
@@ -267,7 +267,7 @@ onMounted(async () => {
       .select('*')
       .eq('id', user.value.id)
       .single()
-    
+
     userProfile.value = data
   }
 })
@@ -280,22 +280,22 @@ const handleValidationRequest = async (trackId) => {
   try {
     isValidating.value = true
     validationError.value = null
-    
+
     const results = await $fetch('/api/validation/validate-track', {
       method: 'POST',
       body: { trackId }
     })
-    
+
     if (results.success) {
       validationResults.value = results
       showValidationResults.value = true
-      
+
       const score = results.score || 0
       showToast(`Validation complete! Score: ${score}/100`, 'success')
     } else {
       throw new Error('Validation was not successful')
     }
-    
+
   } catch (error) {
     validationError.value = error.message || 'Validation failed'
     showToast(error.message || 'Validation failed', 'error')

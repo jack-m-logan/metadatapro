@@ -145,6 +145,47 @@
           @dismissed="dismissArtistValidation"
         />
 
+        <!-- Auto score info banner -->
+        <div
+          v-if="showAutoScoreEducation"
+          class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4"
+        >
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg
+                class="h-5 w-5 text-blue-600 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="ml-3 flex-1">
+              <h3 class="text-sm font-medium text-blue-800">
+                📋 Preview Scores vs 🎯 Official Scores
+              </h3>
+              <div class="mt-2 text-sm text-blue-700">
+                <p>
+                  Blue badges with 📋 show instant preview scores. For distribution-ready validation and official
+                  scoring, click any badge to run <strong>Full Validation</strong>.
+                </p>
+              </div>
+              <div class="mt-3">
+                <button
+                  class="text-blue-600 text-sm font-medium hover:text-blue-500"
+                  @click="dismissAutoScoreEducation"
+                >
+                  Got it, dismiss →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <Toast
           :visible="!!toastMessage.text"
           :message="toastMessage.text"
@@ -205,6 +246,15 @@
           @action="showProFeature('fix_all')"
         />
 
+        <!-- Validation Tooltip -->
+        <ValidationTooltip
+          :visible="showValidationTooltip"
+          :track="selectedTrackForTooltip"
+          :position="tooltipPosition"
+          @validate="validateTrackFromTooltip"
+          @close="hideValidationTooltip"
+        />
+
         <!-- Pro Feature Modal -->
         <div
           v-if="showingProModal"
@@ -247,16 +297,21 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { AgGridVue } from 'ag-grid-vue3'
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import Toast from '/components/toast-messages.vue'
 import ArtistValidationBanner from '/components/ArtistValidationBanner.vue'
+import ValidationTooltip from '/components/ValidationTooltip.vue'
 
 const { showToast, clearToast, message: toastMessage } = useToast()
-const { validateArtistPermission, getVerifiedArtistNames } = useArtistValidation()
+const { getVerifiedArtistNames } = useArtistValidation()
+const {
+  validateTrack: validateTrackMetadata,
+  getValidationSummary
+} = useValidationFeedback()
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -281,9 +336,15 @@ const verifiedArtists = ref([])
 const showArtistValidationBanner = ref(false)
 const pendingArtistEdit = ref(null)
 
+// Auto score education state
+const showAutoScoreEducation = ref(false)
+
 // UI state
 const showingProModal = ref(false)
 const proModalContent = ref({})
+const showValidationTooltip = ref(false)
+const tooltipPosition = ref({ x: 0, y: 0 })
+const selectedTrackForTooltip = ref(null)
 
 // AG Grid
 const gridApi = ref(null)
@@ -420,15 +481,19 @@ const getColumnDefs = (columnSet = 'basic') => {
     {
       headerName: 'ISRC',
       field: 'isrc',
-      width: 120,
+      width: 140,
       editable: true,
+      cellEditor: 'agTextCellEditor',
+      cellEditorParams: {
+        placeholder: 'US-ABC-12-34567'
+      },
       cellRenderer: (params) => {
         if (params.value) {
           return params.value
         } else {
           return '<span class="text-gray-500 italic">Click to add ISRC</span>'
         }
-      }
+      },
     }
   ]
 
@@ -494,6 +559,19 @@ const getColumnDefs = (columnSet = 'basic') => {
         if (params.value !== null) {
           return renderScoreBadge(params.value)
         }
+
+        // calculates pre-validation score based on current, unanalyzed file data
+        const realtimeScore = getTrackValidationScore(params.data)
+        const trackId = params.data.id
+
+        if (realtimeScore < 100) {
+          return `<span 
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-help validation-score-badge border border-blue-200" 
+            data-track-id="${trackId}"
+            title="Preview Score • Click for details and to get official score"
+          >📋 ${realtimeScore}/100</span>`
+        }
+
         return '<span class="text-gray-500">Not validated</span>'
       }
     },
@@ -546,58 +624,76 @@ const onCellValueChanged = async (params) => {
   const normalizedNew = normalizeValue(newValue)
   const normalizedOld = normalizeValue(oldValue)
 
-  // Only proceed if value actually changed
   if (normalizedNew === normalizedOld) {
     return
   }
 
-  if (colDef.field === 'artist' && normalizedNew) {
-    if (normalizedUserTier.value === 'artist') {
-      const permission = await validateArtistPermission(normalizedNew, normalizedUserTier.value)
-
-      if (!permission.allowed && permission.requiresVerification) {
-        pendingArtistEdit.value = {
-          artistName: normalizedNew,
-          trackId: data.id,
-          originalValue: normalizedOld
-        }
-        showArtistValidationBanner.value = true
-
-        data.artist = normalizedOld
-        params.api.refreshCells({ rowNodes: [params.node] })
-        return
-      }
-    }
-  }
-
-  // ISRC validation
   if (colDef.field === 'isrc' && normalizedNew) {
-    const isrcRegex = /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/
-    if (!isrcRegex.test(normalizedNew.toUpperCase())) {
-      showToast('Invalid ISRC format. Use: XX-ABC-12-34567', 'error')
+    const { validateISRC } = useValidationFeedback()
+    const validation = validateISRC(normalizedNew, { autoCorrect: true })
+    
+    if (!validation.isValid) {
+      showToast(`ISRC Error: ${validation.message}`, 'error')
+      // revert to previous value
       data.isrc = normalizedOld
       params.api.refreshCells({ rowNodes: [params.node] })
       return
     }
-    normalizedNew = normalizedNew.toUpperCase()
-  }
+    
+    const finalValue = validation.correctedValue || normalizedNew
+    const wasAutoCorrected = validation.correctedValue && validation.correctedValue !== normalizedNew
+    
+    try {
+      const { data: existingTrack, error: checkError } = await supabase
+        .from('tracks')
+        .select('id, title, artist')
+        .eq('isrc', finalValue)
+        .neq('id', data.id) // exclude current track
+        .single()
 
-  try {
-    const { error } = await supabase
-      .from('tracks')
-      .update({ [colDef.field]: normalizedNew })
-      .eq('id', data.id)
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found
+        console.error('Error checking ISRC duplicate:', checkError)
+        throw new Error('Failed to validate ISRC uniqueness')
+      }
 
-    if (error) throw error
+      if (existingTrack) {
+        showToast(`ISRC already exists for "${existingTrack.title}" by ${existingTrack.artist || 'Unknown Artist'}`, 'error')
+        data.isrc = normalizedOld
+        params.api.refreshCells({ rowNodes: [params.node] })
+        return
+      }
 
-    // Update local data
-    data[colDef.field] = normalizedNew
+      const { error } = await supabase
+        .from('tracks')
+        .update({ [colDef.field]: finalValue })
+        .eq('id', data.id)
 
-    showToast(`${colDef.headerName} updated successfully`, 'success')
-  } catch (error) {
-    console.error('Error saving edit:', error)
-    showToast('Failed to save changes', 'error')
-    params.api.refreshCells({ rowNodes: [params.node] })
+      if (error) throw error
+
+      data[colDef.field] = finalValue
+      
+      params.api.refreshCells({ rowNodes: [params.node] })
+
+      if (wasAutoCorrected) {
+        showToast(`ISRC auto-formatted: ${finalValue}`, 'success')
+      } else {
+        showToast(`${colDef.headerName} updated successfully`, 'success')
+      }
+    } catch (error) {
+      console.error('Error saving ISRC:', error)
+      
+      // duplicate
+      if (error.code === '23505') {
+        showToast('ISRC already exists in your catalog', 'error')
+      } else {
+        showToast('Failed to save ISRC', 'error')
+      }
+      
+      data.isrc = normalizedOld
+      params.api.refreshCells({ rowNodes: [params.node] })
+    }
+    
+    return
   }
 }
 
@@ -670,6 +766,11 @@ const fetchTracks = async () => {
     if (error) throw error
     tracks.value = data || []
 
+    // Check if we should show auto score education
+    nextTick(() => {
+      checkAutoScoreEducation()
+    })
+
   } catch (error) {
     console.error('Error fetching tracks:', error)
     showToast('Failed to load tracks', 'error')
@@ -682,9 +783,25 @@ const onGridReady = (params) => {
   gridApi.value = params.api
   columnApi.value = params.columnApi
 
-  window.validateTrack = validateTrack
+  window.validateTrack = validateTrackAPI
   window.showProFeature = showProFeature
   window.showTrackDetails = showTrackDetails
+
+  // Add click handler for validation score badges
+  nextTick(() => {
+    const gridElement = document.querySelector('.ag-theme-alpine');
+    if (gridElement) {
+      gridElement.addEventListener('click', (event) => {
+        const target: HTMLElement = event.target as HTMLElement;
+        if (target.classList.contains('validation-score-badge')) {
+          const trackId = target.dataset.trackId
+          if (trackId) {
+            showValidationTooltipForTrack(trackId, event as MouseEvent)
+          }
+        }
+      })
+    }
+  })
 }
 
 const onSelectionChanged = () => {
@@ -699,7 +816,7 @@ const onFilterTextBoxChanged = () => {
   }
 }
 
-const validateTrack = async (trackId) => {
+const validateTrackAPI = async (trackId) => {
   try {
     await $fetch('/api/validation/validate-track', {
       method: 'POST',
@@ -724,7 +841,7 @@ const validateSelected = async () => {
     isProcessing.value = true
 
     for (const row of selectedRows) {
-      await validateTrack(row.id)
+      await validateTrackAPI(row.id)
     }
 
     showToast(`${selectedRows.length} tracks validated successfully`, 'success')
@@ -797,7 +914,6 @@ const loadVerifiedArtists = async () => {
   try {
     const artists = await getVerifiedArtistNames()
     verifiedArtists.value = artists.map(artist => artist.toLowerCase().trim())
-    console.log('Loaded verified artists:', verifiedArtists.value)
   } catch (error) {
     console.error('Error loading verified artists:', error)
     verifiedArtists.value = []
@@ -845,7 +961,54 @@ const dismissArtistValidation = () => {
   pendingArtistEdit.value = null
 }
 
-// Lifecycle
+const dismissAutoScoreEducation = () => {
+  showAutoScoreEducation.value = false
+  localStorage.setItem('auto-score-education-dismissed', 'true')
+}
+
+// Check if we should show auto score education
+const checkAutoScoreEducation = () => {
+  const dismissed = localStorage.getItem('auto-score-education-dismissed')
+  if (dismissed) {
+    showAutoScoreEducation.value = false
+    return
+  }
+
+  // Show education banner if there are tracks with auto scores (no official validation_score)
+  const hasAutoScores = tracks.value.some(track =>
+    track.validation_score === null && getTrackValidationScore(track) < 100
+  )
+  showAutoScoreEducation.value = hasAutoScores
+}
+
+const getTrackValidationScore = (track: unknown) => {
+  const results = validateTrackMetadata(track)
+  const summary = getValidationSummary(results)
+  return summary.score
+}
+
+const showValidationTooltipForTrack = (trackId: string, event: MouseEvent) => {
+  const track = tracks.value.find(t => t.id === trackId)
+  if (!track) return
+
+  selectedTrackForTooltip.value = track
+  tooltipPosition.value = {
+    x: event.clientX,
+    y: event.clientY
+  }
+  showValidationTooltip.value = true
+}
+
+const hideValidationTooltip = () => {
+  showValidationTooltip.value = false
+  selectedTrackForTooltip.value = null
+}
+
+const validateTrackFromTooltip = async (trackId: string) => {
+  hideValidationTooltip()
+  await validateTrackAPI(trackId)
+}
+
 onMounted(async () => {
   if (user.value) {
     await Promise.all([
@@ -855,7 +1018,6 @@ onMounted(async () => {
   }
 })
 
-// Auth check
 watchEffect(() => {
   if (user.value === null) {
     navigateTo('/auth/user-login')
@@ -916,5 +1078,42 @@ const showProFeature = (feature) => {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.validation-score-badge {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.validation-score-badge:hover {
+  background: #dbeafe !important;
+  border-color: #60a5fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.validation-score-badge::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 </style>
