@@ -1,9 +1,29 @@
 <template>
   <div
     v-if="shouldShow"
-    class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4"
+    class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 relative"
   >
-    <div class="flex items-start">
+    <button
+      class="absolute top-3 right-3 text-yellow-400 hover:text-yellow-600 transition-colors"
+      aria-label="Close"
+      @click="$emit('dismissed')"
+    >
+      <svg
+        class="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+
+    <div class="flex items-start pr-8">
       <div class="ml-3 flex-1">
         <h3 class="text-sm font-medium text-yellow-800">
           {{ title }}

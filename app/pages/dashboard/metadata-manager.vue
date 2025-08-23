@@ -415,7 +415,11 @@ const getColumnDefs = (columnSet = 'basic') => {
     {
       headerName: 'Track',
       field: 'title',
-      editable: true,
+      editable: (params) => !isRowLocked(params),
+      cellStyle: (params) => ({
+        opacity: isRowLocked(params) ? 0.6 : 1,
+        backgroundColor: isRowLocked(params) ? '#f9fafb' : 'transparent'
+      }),
       cellRenderer: (params) => {
         return params.value ||
           params.data.original_metadata?.title ||
@@ -445,34 +449,55 @@ const getColumnDefs = (columnSet = 'basic') => {
       headerName: 'Artist',
       field: 'artist',
       editable: true,
-      cellRenderer: (params) => {
+      tooltipValueGetter: (params) => {
         const artist = params.value || params.data.original_metadata?.artist
 
-        if (!artist) {
-          return '<span class="text-gray-500 italic">Click to add artist</span>'
-        }
+        if (!artist) return null
 
-        if (normalizedUserTier.value !== 'artist') {
-          return `<span>${artist}</span>`
-        }
+        if (normalizedUserTier.value !== 'artist') return null
 
         const verified = isArtistVerified(artist)
-        const statusIcon = verified ? '✅' : '⚠️'
-        const statusColor = verified ? 'text-green-600' : 'text-orange-500'
 
-        return `<div class="flex items-center justify-between w-full">
-                <span>${artist}</span>
-                <span class="${statusColor} text-sm ml-2">${statusIcon}</span>
-            </div>`
+        if (!verified) {
+          return "Unverified artist - click to add as verified alias or upgrade to Label tier"
+        }
+      },
+      cellRenderer: (params) => {
+        return artistCellRenderer(params)
       },
       cellEditorParams: {
         maxLength: 100
+      },
+      onCellClicked: (params) => {
+        const artist = params.value || params.data.original_metadata?.artist
+
+        if (artist && normalizedUserTier.value === 'artist') {
+          const verified = isArtistVerified(artist)
+
+          // show banner for unverified artist
+          if (!verified) {
+            pendingArtistEdit.value = {
+              trackId: params.data.id,
+              artistName: artist
+            }
+            showArtistValidationBanner.value = true
+          } else {
+            if (showArtistValidationBanner.value) {
+              showArtistValidationBanner.value = false
+              pendingArtistEdit.value = null
+            }
+          }
+        }
       }
     },
     {
       headerName: 'Album',
       field: 'album',
-      editable: true,
+      editable: (params) => !isRowLocked(params),
+      cellStyle: (params) => ({
+        opacity: isRowLocked(params) ? 0.6 : 1,
+        backgroundColor: isRowLocked(params) ? '#f9fafb' : 'transparent'
+      }),
       cellRenderer: (params) => {
         const album = params.value || params.data.original_metadata?.album
         return album || '<span class="text-gray-500 italic">Click to add album</span>'
@@ -482,7 +507,11 @@ const getColumnDefs = (columnSet = 'basic') => {
       headerName: 'ISRC',
       field: 'isrc',
       width: 140,
-      editable: true,
+      editable: (params) => !isRowLocked(params),
+      cellStyle: (params) => ({
+        opacity: isRowLocked(params) ? 0.6 : 1,
+        backgroundColor: isRowLocked(params) ? '#f9fafb' : 'transparent'
+      }),
       cellEditor: 'agTextCellEditor',
       cellEditorParams: {
         placeholder: 'US-ABC-12-34567'
@@ -525,7 +554,11 @@ const getColumnDefs = (columnSet = 'basic') => {
       headerName: 'Publisher',
       field: 'publisher',
       width: 150,
-      editable: true,
+      editable: (params) => !isRowLocked(params),
+      cellStyle: (params) => ({
+        opacity: isRowLocked(params) ? 0.6 : 1,
+        backgroundColor: isRowLocked(params) ? '#f9fafb' : 'transparent'
+      }),
       cellRenderer: (params) => {
         if (columnSet === 'all') {
           return params.value || '<span class="text-gray-500 italic">Click to add</span>'
@@ -538,7 +571,11 @@ const getColumnDefs = (columnSet = 'basic') => {
       headerName: 'Songwriter',
       field: 'songwriter',
       width: 150,
-      editable: columnSet === 'all',
+      editable: (params) => !isRowLocked(params) && columnSet === 'all',
+      cellStyle: (params) => ({
+        opacity: isRowLocked(params) ? 0.6 : 1,
+        backgroundColor: isRowLocked(params) ? '#f9fafb' : 'transparent'
+      }),
       cellRenderer: (params) => {
         if (columnSet === 'all') {
           return params.value || '<span class="text-gray-500 italic">Click to add</span>'
@@ -555,24 +592,35 @@ const getColumnDefs = (columnSet = 'basic') => {
       field: 'validation_score',
       width: 80,
       editable: false,
+      tooltipValueGetter: (params) => {
+        if (params.value !== null) return null
+
+        const realtimeScore = getTrackValidationScore(params.data)
+        if (realtimeScore < 100) {
+          return "Preview Score • Click for detailed analysis and to run Full Validation"
+        }
+        return null
+      },
       cellRenderer: (params) => {
         if (params.value !== null) {
           return renderScoreBadge(params.value)
         }
 
-        // calculates pre-validation score based on current, unanalyzed file data
         const realtimeScore = getTrackValidationScore(params.data)
-        const trackId = params.data.id
 
         if (realtimeScore < 100) {
-          return `<span 
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-help validation-score-badge border border-blue-200" 
-            data-track-id="${trackId}"
-            title="Preview Score • Click for details and to get official score"
-          >📋 ${realtimeScore}/100</span>`
+          return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer validation-score-badge border border-blue-200 hover:bg-blue-200 hover:border-blue-300 transition-colors">📋 ${realtimeScore}/100</span>`
         }
 
         return '<span class="text-gray-500">Not validated</span>'
+      },
+      onCellClicked: (params) => {
+        if (params.value === null) {
+          const realtimeScore = getTrackValidationScore(params.data)
+          if (realtimeScore < 100) {
+            showValidationTooltipForTrack(params.data.id, params.event)
+          }
+        }
       }
     },
     {
@@ -581,7 +629,7 @@ const getColumnDefs = (columnSet = 'basic') => {
       width: 100,
       editable: false,
       cellRenderer: (params) => {
-        return renderStatusBadge(params.value)
+        return renderStatusBadge(params.value || 'pending')
       }
     },
     {
@@ -631,18 +679,17 @@ const onCellValueChanged = async (params) => {
   if (colDef.field === 'isrc' && normalizedNew) {
     const { validateISRC } = useValidationFeedback()
     const validation = validateISRC(normalizedNew, { autoCorrect: true })
-    
+
     if (!validation.isValid) {
       showToast(`ISRC Error: ${validation.message}`, 'error')
-      // revert to previous value
       data.isrc = normalizedOld
       params.api.refreshCells({ rowNodes: [params.node] })
       return
     }
-    
+
     const finalValue = validation.correctedValue || normalizedNew
     const wasAutoCorrected = validation.correctedValue && validation.correctedValue !== normalizedNew
-    
+
     try {
       const { data: existingTrack, error: checkError } = await supabase
         .from('tracks')
@@ -671,7 +718,6 @@ const onCellValueChanged = async (params) => {
       if (error) throw error
 
       data[colDef.field] = finalValue
-      
       params.api.refreshCells({ rowNodes: [params.node] })
 
       if (wasAutoCorrected) {
@@ -681,19 +727,55 @@ const onCellValueChanged = async (params) => {
       }
     } catch (error) {
       console.error('Error saving ISRC:', error)
-      
+
       // duplicate
       if (error.code === '23505') {
         showToast('ISRC already exists in your catalog', 'error')
       } else {
         showToast('Failed to save ISRC', 'error')
       }
-      
+
       data.isrc = normalizedOld
       params.api.refreshCells({ rowNodes: [params.node] })
     }
-    
+
     return
+  }
+  try {
+    const { error } = await supabase
+      .from('tracks')
+      .update({ [colDef.field]: normalizedNew })
+      .eq('id', data.id)
+
+    if (error) throw error
+
+    data[colDef.field] = normalizedNew
+
+    if (colDef.field === 'artist' && showArtistValidationBanner.value && pendingArtistEdit.value) {
+      if (pendingArtistEdit.value.trackId === data.id) {
+        pendingArtistEdit.value.artistName = normalizedNew
+
+        if (normalizedNew && isArtistVerified(normalizedNew)) {
+          showArtistValidationBanner.value = false
+          pendingArtistEdit.value = null
+          showToast(`Artist verified! "${normalizedNew}" is now validated.`, 'success')
+        } else if (!normalizedNew) {
+          showArtistValidationBanner.value = false
+          pendingArtistEdit.value = null
+        }
+      }
+    }
+
+    showToast(`${colDef.headerName} updated successfully`, 'success')
+
+    params.api.refreshCells({ rowNodes: [params.node] })
+
+  } catch (error) {
+    console.error('Error saving field:', error)
+    showToast(`Failed to save ${colDef.headerName}`, 'error')
+
+    data[colDef.field] = normalizedOld
+    params.api.refreshCells({ rowNodes: [params.node] })
   }
 }
 
@@ -719,7 +801,12 @@ const gridOptions = {
   pagination: true,
   paginationAutoPageSize: true,
   suppressHorizontalScroll: false,
-  suppressPaginationPanel: false
+  suppressPaginationPanel: false,
+  components: {
+    ValidationTooltip: ValidationTooltip
+  },
+  tooltipShowDelay: 500,
+  tooltipHideDelay: 5000
 }
 
 // Computed
@@ -786,22 +873,6 @@ const onGridReady = (params) => {
   window.validateTrack = validateTrackAPI
   window.showProFeature = showProFeature
   window.showTrackDetails = showTrackDetails
-
-  // Add click handler for validation score badges
-  nextTick(() => {
-    const gridElement = document.querySelector('.ag-theme-alpine');
-    if (gridElement) {
-      gridElement.addEventListener('click', (event) => {
-        const target: HTMLElement = event.target as HTMLElement;
-        if (target.classList.contains('validation-score-badge')) {
-          const trackId = target.dataset.trackId
-          if (trackId) {
-            showValidationTooltipForTrack(trackId, event as MouseEvent)
-          }
-        }
-      })
-    }
-  })
 }
 
 const onSelectionChanged = () => {
@@ -996,7 +1067,11 @@ const showValidationTooltipForTrack = (trackId: string, event: MouseEvent) => {
     x: event.clientX,
     y: event.clientY
   }
+
   showValidationTooltip.value = true
+
+// avoid conflicts from bubbling
+  event.stopPropagation()
 }
 
 const hideValidationTooltip = () => {
@@ -1037,6 +1112,34 @@ watch(normalizedUserTier, () => {
   }
 })
 
+const isRowLocked = (params) => {
+  if (normalizedUserTier.value !== 'artist') return false
+
+  const artist = params.data.artist || params.data.original_metadata?.artist
+  return artist && !isArtistVerified(artist)
+}
+
+const artistCellRenderer = (params) => {
+  const artist = params.value || params.data.original_metadata?.artist
+
+  if (!artist) {
+    return '<span class="text-gray-500 italic">Click to add artist</span>'
+  }
+
+  if (normalizedUserTier.value !== 'artist') {
+    return `<span>${artist}</span>`
+  }
+
+  const verified = isArtistVerified(artist)
+  const statusIcon = verified ? '' : '⚠️'
+  const statusColor = verified ? 'text-green-600' : 'text-orange-500'
+  const cursorClass = verified ? 'cursor-default' : 'cursor-pointer'
+
+  return `<div class="flex items-center justify-between w-full ${cursorClass}" data-track-id="${params.data.id}" data-artist="${artist}">
+            <span>${artist}</span>
+            <span class="${statusColor} text-sm ml-2">${statusIcon}</span>
+        </div>`
+}
 
 const selectColumnSet = (columnSet) => {
   if ((columnSet === 'rights' || columnSet === 'all') && userTier.value !== 'pro') {

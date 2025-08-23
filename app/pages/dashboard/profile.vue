@@ -754,7 +754,7 @@ const fetchUserProfile = async () => {
     await fetchUsageStats()
   } catch (error) {
     console.error('Error fetching profile:', error)
-    showMessage('Failed to load profile', 'error')
+    showToast('Failed to load profile', 'error')
   }
 }
 
@@ -816,10 +816,10 @@ const saveProfile = async () => {
 
     if (error) throw error
 
-    showMessage('Profile updated successfully', 'success')
+    showToast('Profile updated successfully', 'success')
   } catch (error) {
     console.error('Error saving profile:', error)
-    showMessage('Failed to save profile', 'error')
+    showToast('Failed to save profile', 'error')
   } finally {
     isSaving.value = false
   }
@@ -843,11 +843,11 @@ const addAlias = async (formData: { artistName: string, evidence: string }) => {
         artistAliasForm.value.resetForm()
       }
       
-      showMessage(`"${formData.artistName}" added as verified artist alias!`, 'success')
+      showToast(`"${formData.artistName}" added as verified artist alias!`, 'success')
     }
   } catch (error) {
     console.error('Error adding alias:', error)
-    showMessage(error.message || 'Failed to add artist alias', 'error')
+    showToast(error.message || 'Failed to add artist alias', 'error')
   } finally {
     isAddingAlias.value = false
   }
@@ -863,10 +863,10 @@ const removeAlias = async (artistName: string) => {
   try {
     await removeArtistAlias(artistName)
     await loadVerifiedArtists()
-    showMessage(`"${artistName}" removed from verified artists`, 'success')
+    showToast(`"${artistName}" removed from verified artists`, 'success')
   } catch (error) {
     console.error('Error removing alias:', error)
-    showMessage(error.message || 'Failed to remove artist alias', 'error')
+    showToast(error.message || 'Failed to remove artist alias', 'error')
   }
 }
 
@@ -875,10 +875,10 @@ const setPrimary = async (artistName: string) => {
     await setPrimaryArtist(artistName)
     profileForm.value.primary_artist_name = artistName
     await loadVerifiedArtists()
-    showMessage(`"${artistName}" set as primary artist`, 'success')
+    showToast(`"${artistName}" set as primary artist`, 'success')
   } catch (error) {
     console.error('Error setting primary artist:', error)
-    showMessage(error.message || 'Failed to set primary artist', 'error')
+    showToast(error.message || 'Failed to set primary artist', 'error')
   }
 }
 
@@ -895,13 +895,13 @@ const sendPasswordReset = async () => {
     })
 
     if (error) {
-      showMessage(`Failed to send reset email: ${error.message}`, 'error')
+      showToast(`Failed to send reset email: ${error.message}`, 'error')
     } else {
-      showMessage('Password reset email sent! Check your inbox.', 'success')
+      showToast('Password reset email sent! Check your inbox.', 'success')
     }
   } catch (error) {
     console.error('Password reset error:', error)
-    showMessage('Failed to send password reset email', 'error')
+    showToast('Failed to send password reset email', 'error')
   } finally {
     isResettingPassword.value = false
   }
@@ -914,13 +914,13 @@ const signOutEverywhere = async () => {
     const { error } = await supabase.auth.signOut({ scope: 'global' })
 
     if (error) {
-      showMessage(`Failed to sign out: ${error.message}`, 'error')
+      showToast(`Failed to sign out: ${error.message}`, 'error')
     } else {
-      showMessage('Signed out from all devices successfully', 'success')
+      showToast('Signed out from all devices successfully', 'success')
     }
   } catch (error) {
     console.error('Sign out error:', error)
-    showMessage('Failed to sign out from all devices', 'error')
+    showToast('Failed to sign out from all devices', 'error')
   } finally {
     isSigningOut.value = false
   }
@@ -936,10 +936,10 @@ const confirmDeleteAccount = () => {
 
 const deleteAccount = async () => {
   try {
-    showMessage('Account deletion is not yet implemented. Please contact support for account deletion.', 'error')
+    showToast('Account deletion is not yet implemented. Please contact support for account deletion.', 'error')
   } catch (error) {
     console.error('Account deletion error:', error)
-    showMessage('Failed to delete account', 'error')
+    showToast('Failed to delete account', 'error')
   }
 }
 
@@ -952,7 +952,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const showMessage = (text: string, type: string) => {
+const showToast = (text: string, type: string) => {
   message.value = { text, type }
   setTimeout(() => {
     message.value = { text: '', type: '' }
