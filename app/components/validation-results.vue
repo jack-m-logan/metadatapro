@@ -9,7 +9,7 @@
               Validation Results
             </h2>
             <p class="text-sm text-gray-600 mt-1">
-              {{ results.track?.filename || 'Unknown Track' }}
+              {{ decodeHtmlPlain(results.track?.filename) || 'Unknown Track' }}
             </p>
           </div>
           <button
@@ -73,7 +73,11 @@
               Title
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
-              {{ results.metadata?.title || 'Not detected' }}
+              <span v-if="results.metadata?.title">{{ decodeHtmlPlain(results.metadata.title) }}</span>
+              <span
+                v-else
+                class="text-gray-500 italic"
+              >Not detected</span>
               <span
                 v-if="!results.metadata?.title"
                 class="text-red-600 ml-2"
@@ -85,11 +89,43 @@
               Artist
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
-              {{ results.metadata?.artist || 'Not detected' }}
+              <span v-if="results.metadata?.artist">{{ decodeHtmlPlain(results.metadata.artist) }}</span>
+              <span
+                v-else
+                class="text-gray-500 italic"
+              >Not detected</span>
               <span
                 v-if="!results.metadata?.artist"
                 class="text-red-600 ml-2"
               >⚠ Required for distribution</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              Album
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <span v-if="results.metadata?.album">{{ decodeHtmlPlain(results.metadata.album) }}</span>
+              <span
+                v-else
+                class="text-gray-500 italic"
+              >Not specified</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              Genre
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <span v-if="results.metadata?.genre">{{ decodeHtmlPlain(results.metadata.genre) }}</span>
+              <span
+                v-else
+                class="text-gray-500 italic"
+              >Not specified</span>
+              <span
+                v-if="!results.metadata?.genre"
+                class="text-yellow-600 ml-2"
+              >⚠ Improves discoverability</span>
             </dd>
           </div>
           <div>
@@ -105,7 +141,7 @@
               Format
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
-              {{ results.metadata?.codec || 'Unknown' }}
+              {{ formatAudioFormat(results.metadata?.codec, results.metadata?.container) }}
             </dd>
           </div>
           <div>
@@ -113,7 +149,7 @@
               Sample Rate
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
-              {{ results.metadata?.sample_rate ? `${results.metadata.sample_rate} Hz` : 'Unknown' }}
+              {{ results.metadata?.sample_rate ? `${results.metadata.sample_rate.toLocaleString()} Hz` : 'Unknown' }}
               <span
                 v-if="results.metadata?.sample_rate && results.metadata.sample_rate < 44100"
                 class="text-yellow-600 ml-2"
@@ -125,7 +161,11 @@
               ISRC
             </dt>
             <dd class="mt-1 text-sm text-gray-900">
-              {{ results.metadata?.isrc || 'Not found' }}
+              <span v-if="results.metadata?.isrc">{{ results.metadata.isrc }}</span>
+              <span
+                v-else
+                class="text-gray-500 italic"
+              >Not found</span>
               <span
                 v-if="!results.metadata?.isrc"
                 class="text-blue-600 ml-2"
@@ -170,16 +210,16 @@
             </div>
             <div class="ml-3 flex-1">
               <h4 class="text-sm font-medium text-gray-900">
-                {{ issue.title }}
+                {{ decodeHtmlPlain(issue.title) }}
               </h4>
               <p class="text-sm text-gray-600 mt-1">
-                {{ issue.description }}
+                {{ decodeHtmlPlain(issue.description) }}
               </p>
               <p
                 v-if="issue.suggestion"
                 class="text-sm text-indigo-600 mt-2"
               >
-                💡 {{ issue.suggestion }}
+                💡 {{ decodeHtmlPlain(issue.suggestion) }}
               </p>
               <!-- Correction CTA for fixable issues -->
               <div
@@ -235,6 +275,14 @@ const props = defineProps({
 
 const emit = defineEmits(['back-to-upload'])
 
+// Simple HTML entity decoder (XSS-safe for text interpolation)
+const decodeHtmlPlain = (text) => {
+  if (!text) return ''
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
 const handleBackToUpload = () => {
   emit('back-to-upload')
 }
@@ -244,7 +292,6 @@ const getScoreColor = (score) => {
   if (score >= 60) return 'bg-yellow-500'
   return 'bg-red-500'
 }
-
 
 const getSeverityColor = (severity) => {
   switch (severity) {
@@ -267,8 +314,63 @@ const getSeverityIcon = (severity) => {
 const formatDuration = (seconds) => {
   if (!seconds) return 'Unknown'
   const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
+  const secs = Math.round(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const formatAudioFormat = (codec, container) => {
+  const formatMap = {
+    // MP3 variants
+    'MPEG 1 Layer 3': 'MP3',
+    'MPEG 2 Layer 3': 'MP3',
+    'MPEG 2.5 Layer 3': 'MP3',
+    
+    // WAV variants
+    'PCM': 'WAV',
+    'Linear PCM': 'WAV',
+    
+    // Apple formats
+    'ALAC': 'M4A (Lossless)',
+    'Apple Lossless': 'M4A (Lossless)',
+    'AAC': 'M4A',
+    'Advanced Audio Coding': 'M4A',
+    
+    // FLAC
+    'FLAC': 'FLAC',
+    'Free Lossless Audio Codec': 'FLAC',
+    
+    // Other formats
+    'Vorbis': 'OGG',
+    'Opus': 'Opus',
+    'WMA': 'WMA'
+  }
+  
+  // Try codec first
+  if (codec && formatMap[codec]) {
+    return formatMap[codec]
+  }
+  
+  // Fall back to container mapping
+  const containerMap = {
+    'MPEG': 'MP3',
+    'WAVE': 'WAV', 
+    'RIFF': 'WAV',
+    'FLAC': 'FLAC',
+    'MPEG-4': 'M4A',
+    'QuickTime': 'M4A',
+    'Ogg': 'OGG'
+  }
+  
+  if (container && containerMap[container]) {
+    return containerMap[container]
+  }
+  
+  // Clean up technical names as fallback
+  if (codec) {
+    return codec.replace(/^MPEG\s*/, 'MP').replace(/\s*Layer\s*/, '')
+  }
+  
+  return container || 'Unknown'
 }
 
 const getRevenueImpactMessage = (score, issues) => {
