@@ -105,7 +105,7 @@ export default defineEventHandler(async (event) => {
       .from('tracks')
       .update({ 
         original_metadata: extractedMetadata,
-        validation_status: 'completed', // change from 'processing' to 'completed'
+        validation_status: 'pending', // metadata extracted, ready for validation
         duration_seconds: extractedMetadata.duration,
         metadata_duration_seconds: extractedMetadata.duration,
         title: extractedMetadata.title || null,
