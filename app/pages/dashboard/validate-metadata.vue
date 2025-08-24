@@ -273,7 +273,7 @@ onMounted(async () => {
 })
 
 const handleUploadComplete = (result) => {
-  showToast(`Track "${result.track.filename}" uploaded successfully!`, 'success')
+  showToast(`File "${result.track.filename}" uploaded successfully!`, 'success')
 }
 
 const handleValidationRequest = async (trackId) => {
@@ -290,7 +290,7 @@ const handleValidationRequest = async (trackId) => {
       validationResults.value = results
       showValidationResults.value = true
 
-      const score = results.score || 0
+      const score = results.validationScore || 0
       showToast(`Validation complete! Score: ${score}/100`, 'success')
     } else {
       throw new Error('Validation was not successful')
