@@ -115,7 +115,7 @@
             </h3>
             <div class="flex flex-wrap gap-3">
               <button
-                v-if="!validationResults.hasChangedSinceValidation"
+                v-if="validationResults.hasChangedSinceValidation"
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                 :disabled="isValidating"
                 @click="handleReValidate"
