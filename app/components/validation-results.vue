@@ -8,16 +8,36 @@
             <h2 class="text-xl font-semibold text-gray-900">
               Validation Results
             </h2>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ decodeHtmlPlain(results.track?.filename) || 'Unknown Track' }}
-            </p>
+            <div class="flex items-center mt-1 space-x-2">
+              <p class="text-sm text-gray-600">
+                {{ decodeHtmlPlain(results.track?.filename) || 'Unknown Track' }}
+              </p>
+              <StatusBadge
+                v-if="results.hasChangedSinceValidation"
+                type="custom"
+                value="Changed Since Validation"
+                color="yellow"
+                shape="pill"
+                size="sm"
+                class="ml-2"
+              />
+              <StatusBadge
+                v-else-if="results.validatedAt"
+                type="custom"
+                value="Current"
+                color="green"
+                shape="pill"
+                size="sm"
+                class="ml-2"
+              />
+            </div>
           </div>
           <button
             v-if="showBackButton"
             class="text-sm text-indigo-600 hover:text-indigo-500"
             @click="$emit('back-to-upload')"
           >
-            ← Upload Another Track
+            ← Back
           </button>
         </div>
       </div>
@@ -26,7 +46,17 @@
         <div class="flex items-center space-x-4">
           <div class="flex-1">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-700">Validation Score</span>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-700">
+                  {{ results.hasChangedSinceValidation ? 'Last Validation Score' : 'Validation Score' }}
+                </span>
+                <span
+                  v-if="results.validatedAt"
+                  class="text-xs text-gray-500"
+                >
+                  {{ formatValidationDate(results.validatedAt) }}
+                </span>
+              </div>
               <span class="text-sm font-medium text-gray-900">
                 {{ results.validationScore || 0 }}/100
               </span>
@@ -47,9 +77,27 @@
           />
         </div>
 
+        <AlertBanner
+          v-if="results.hasChangedSinceValidation"
+          type="info"
+          title="Metadata Changed"
+          message="This track has been edited since the last validation. Results shown reflect the previous state."
+          class="mt-4"
+          size="small"
+        >
+          <template #action>
+            <button
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-500 underline"
+              @click="$emit('re-validate')"
+            >
+              Validate Current Metadata
+            </button>
+          </template>
+        </AlertBanner>
+
         <!-- Revenue Impact Message -->
         <AlertBanner
-          v-if="results.validationScore < 80"
+          v-else-if="results.validationScore < 80"
           type="warning"
           title="Revenue Impact Warning"
           :message="getRevenueImpactMessage(results.validationScore, results.issues)"
@@ -59,75 +107,50 @@
       </div>
     </div>
 
-    <!-- Track Information -->
+    <!-- Track Information - Show Current State -->
     <div class="bg-white shadow rounded-lg mb-6">
       <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">
-          Track Information
-        </h3>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium text-gray-900">
+            {{ results.hasChangedSinceValidation ? 'Current Track Information' : 'Track Information' }}
+          </h3>
+          <span
+            v-if="results.hasChangedSinceValidation"
+            class="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded"
+          >
+            Modified
+          </span>
+        </div>
       </div>
       <div class="px-6 py-4">
         <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-          <div>
-            <dt class="text-sm font-medium text-gray-500">
-              Title
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="results.metadata?.title">{{ decodeHtmlPlain(results.metadata.title) }}</span>
-              <span
-                v-else
-                class="text-gray-500 italic"
-              >Not detected</span>
-              <span
-                v-if="!results.metadata?.title"
-                class="text-red-600 ml-2"
-              >⚠ Required for distribution</span>
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">
-              Artist
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="results.metadata?.artist">{{ decodeHtmlPlain(results.metadata.artist) }}</span>
-              <span
-                v-else
-                class="text-gray-500 italic"
-              >Not detected</span>
-              <span
-                v-if="!results.metadata?.artist"
-                class="text-red-600 ml-2"
-              >⚠ Required for distribution</span>
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">
-              Album
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="results.metadata?.album">{{ decodeHtmlPlain(results.metadata.album) }}</span>
-              <span
-                v-else
-                class="text-gray-500 italic"
-              >Not specified</span>
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">
-              Genre
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="results.metadata?.genre">{{ decodeHtmlPlain(results.metadata.genre) }}</span>
-              <span
-                v-else
-                class="text-gray-500 italic"
-              >Not specified</span>
-              <span
-                v-if="!results.metadata?.genre"
-                class="text-yellow-600 ml-2"
-              >⚠ Improves discoverability</span>
-            </dd>
-          </div>
+          <MetadataField
+            label="Title"
+            :current-value="results.currentMetadata?.title"
+            :original-value="results.metadata?.title"
+            :show-comparison="results.hasChangedSinceValidation"
+            required
+          />
+          <MetadataField
+            label="Artist"
+            :current-value="results.currentMetadata?.artist"
+            :original-value="results.metadata?.artist"
+            :show-comparison="results.hasChangedSinceValidation"
+            required
+          />
+          <MetadataField
+            label="Album"
+            :current-value="results.currentMetadata?.album"
+            :original-value="results.metadata?.album"
+            :show-comparison="results.hasChangedSinceValidation"
+          />
+          <MetadataField
+            label="Genre"
+            :current-value="results.currentMetadata?.genre"
+            :original-value="results.metadata?.genre"
+            :show-comparison="results.hasChangedSinceValidation"
+            helps-discoverability
+          />
           <div>
             <dt class="text-sm font-medium text-gray-500">
               Duration
@@ -153,25 +176,18 @@
               <span
                 v-if="results.metadata?.sample_rate && results.metadata.sample_rate < 44100"
                 class="text-yellow-600 ml-2"
-              >⚠ Low quality</span>
+              >
+                ⚠ Low quality
+              </span>
             </dd>
           </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">
-              ISRC
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              <span v-if="results.metadata?.isrc">{{ results.metadata.isrc }}</span>
-              <span
-                v-else
-                class="text-gray-500 italic"
-              >Not found</span>
-              <span
-                v-if="!results.metadata?.isrc"
-                class="text-blue-600 ml-2"
-              >💰 Missing radio royalties</span>
-            </dd>
-          </div>
+          <MetadataField
+            label="ISRC"
+            :current-value="results.currentMetadata?.isrc"
+            :original-value="results.metadata?.isrc"
+            :show-comparison="results.hasChangedSinceValidation"
+            affects-royalties
+          />
         </dl>
       </div>
     </div>
@@ -181,6 +197,12 @@
       <div class="px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-medium text-gray-900">
           Issues Found
+          <span
+            v-if="results.hasChangedSinceValidation"
+            class="text-sm text-orange-600 ml-2"
+          >
+            (from most recent validation)
+          </span>
         </h3>
       </div>
       <div class="divide-y divide-gray-200">
@@ -227,7 +249,7 @@
                 class="mt-3 p-2 bg-green-50 border border-green-200 rounded"
               >
                 <p class="text-sm text-green-800">
-                  🔧 This can be fixed automatically for €0.99
+                  🔧 This can be fixed automatically
                 </p>
               </div>
             </div>
@@ -244,6 +266,14 @@
       <div class="px-6 py-4">
         <div class="flex space-x-4">
           <button
+            v-if="results.hasChangedSinceValidation"
+            class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+            @click="$emit('re-validate')"
+          >
+            🎯 Validate Current Metadata
+          </button>
+          <button
+            v-else
             class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
             @click="downloadReport"
           >
@@ -253,7 +283,7 @@
             class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors"
             @click="handleBackToUpload"
           >
-            Upload Another Track
+            Back to Dashboard
           </button>
         </div>
       </div>
@@ -262,6 +292,58 @@
 </template>
 
 <script setup>
+// MetadataField component for showing current vs original values
+const MetadataField = defineComponent({
+  props: {
+    label: String,
+    currentValue: String,
+    originalValue: String,
+    showComparison: Boolean,
+    required: Boolean,
+    helpsDiscoverability: Boolean,
+    affectsRoyalties: Boolean
+  },
+  setup(props) {
+    const hasChanged = computed(() => {
+      if (!props.showComparison) return false
+      const current = props.currentValue?.trim() || null
+      const original = props.originalValue?.trim() || null
+      return current !== original
+    })
+
+    const getWarningText = () => {
+      if (props.required) return '⚠ Required for distribution'
+      if (props.helpsDiscoverability) return '⚠ Improves discoverability'
+      if (props.affectsRoyalties) return '💰 Missing radio royalties'
+      return null
+    }
+
+    return { hasChanged, getWarningText }
+  },
+  template: `
+    <div>
+      <dt class="text-sm font-medium text-gray-500 flex items-center">
+        {{ label }}
+        <span v-if="hasChanged" class="ml-2 text-xs text-orange-500">Changed</span>
+      </dt>
+      <dd class="mt-1 text-sm text-gray-900">
+        <span v-if="currentValue">{{ currentValue }}</span>
+        <span v-else class="text-gray-500 italic">Not specified</span>
+        
+        <!-- Show warning for missing required/important fields -->
+        <span v-if="!currentValue && getWarningText()" class="text-red-600 ml-2 text-xs">
+          {{ getWarningText() }}
+        </span>
+        
+        <!-- Show comparison if changed -->
+        <div v-if="hasChanged && showComparison" class="mt-1 text-xs text-gray-500">
+          Originally: {{ originalValue || 'Not specified' }}
+        </div>
+      </dd>
+    </div>
+  `
+})
+
 const props = defineProps({
   results: {
     type: Object,
@@ -273,9 +355,8 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['back-to-upload'])
+const emit = defineEmits(['back-to-upload', 're-validate'])
 
-// Simple HTML entity decoder (XSS-safe for text interpolation)
 const decodeHtmlPlain = (text) => {
   if (!text) return ''
   const textarea = document.createElement('textarea')
@@ -319,58 +400,18 @@ const formatDuration = (seconds) => {
 }
 
 const formatAudioFormat = (codec, container) => {
-  const formatMap = {
-    // MP3 variants
-    'MPEG 1 Layer 3': 'MP3',
-    'MPEG 2 Layer 3': 'MP3',
-    'MPEG 2.5 Layer 3': 'MP3',
-    
-    // WAV variants
-    'PCM': 'WAV',
-    'Linear PCM': 'WAV',
-    
-    // Apple formats
-    'ALAC': 'M4A (Lossless)',
-    'Apple Lossless': 'M4A (Lossless)',
-    'AAC': 'M4A',
-    'Advanced Audio Coding': 'M4A',
-    
-    // FLAC
-    'FLAC': 'FLAC',
-    'Free Lossless Audio Codec': 'FLAC',
-    
-    // Other formats
-    'Vorbis': 'OGG',
-    'Opus': 'Opus',
-    'WMA': 'WMA'
-  }
-  
-  // Try codec first
-  if (codec && formatMap[codec]) {
-    return formatMap[codec]
-  }
-  
-  // Fall back to container mapping
-  const containerMap = {
-    'MPEG': 'MP3',
-    'WAVE': 'WAV', 
-    'RIFF': 'WAV',
-    'FLAC': 'FLAC',
-    'MPEG-4': 'M4A',
-    'QuickTime': 'M4A',
-    'Ogg': 'OGG'
-  }
-  
-  if (container && containerMap[container]) {
-    return containerMap[container]
-  }
-  
-  // Clean up technical names as fallback
-  if (codec) {
-    return codec.replace(/^MPEG\s*/, 'MP').replace(/\s*Layer\s*/, '')
-  }
-  
-  return container || 'Unknown'
+  return codec || container || 'Unknown'
+}
+
+const formatValidationDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-GB', { 
+    day: 'numeric', 
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 const getRevenueImpactMessage = (score, issues) => {
@@ -378,7 +419,7 @@ const getRevenueImpactMessage = (score, issues) => {
   const criticalIssues = issues?.filter(i => i.severity === 'critical').length || 0
 
   if (missingISRC) {
-    return 'Missing ISRC could cost you €50-200 per month in radio royalties. Generate one instantly with Pro.'
+    return 'Missing ISRC could cost you €50-200 per month in radio royalties.'
   }
 
   if (criticalIssues > 0) {
@@ -391,7 +432,7 @@ const getRevenueImpactMessage = (score, issues) => {
 const isFixableIssue = (issueCode) => {
   const fixableIssues = [
     'missing_title',
-    'missing_artist',
+    'missing_artist', 
     'missing_album',
     'missing_isrc',
     'invalid_isrc_format'
@@ -400,7 +441,6 @@ const isFixableIssue = (issueCode) => {
 }
 
 const downloadReport = () => {
-  // TODO: Implement report download
   console.log('Download report for:', props.results)
 }
 </script>

@@ -30,6 +30,11 @@ export default defineEventHandler(async (event) => {
       })
     }
     
+    await supabase
+      .from('validation_issues')
+      .delete()
+      .eq('track_id', trackId)
+    
     const issues = []
     let validationScore = 100
     
@@ -90,16 +95,38 @@ export default defineEventHandler(async (event) => {
     
     validationScore = Math.max(0, validationScore)
     
+    // Create metadata snapshot at validation time
+    const validationResults = {
+      validationScore,
+      issues,
+      validatedAt: new Date().toISOString(),
+      // Store current metadata state at time of validation
+      currentMetadata: {
+        title: track.title,
+        artist: track.artist,
+        album: track.album,
+        isrc: track.isrc,
+        genre: track.genre,
+        year: track.year
+      },
+      // Keep original metadata for reference
+      originalMetadata: track.original_metadata
+    }
+    
+    // Update track with validation results and snapshot
     await supabase
       .from('tracks')
       .update({
         validation_status: 'completed',
         validation_score: validationScore,
+        validation_results: validationResults,
         has_critical_issues: issues.some(i => i.severity === 'critical'),
-        has_warnings: issues.some(i => i.severity === 'warning')
+        has_warnings: issues.some(i => i.severity === 'warning'),
+        processing_completed_at: new Date().toISOString()
       })
       .eq('id', trackId)
     
+    // Store individual issues
     if (issues.length > 0) {
       const issueRecords = issues.map(issue => ({
         track_id: trackId,
@@ -121,7 +148,8 @@ export default defineEventHandler(async (event) => {
       track,
       validationScore,
       issues,
-      metadata: track.original_metadata
+      metadata: track.original_metadata,
+      validationResults
     }
     
   } catch (error) {
