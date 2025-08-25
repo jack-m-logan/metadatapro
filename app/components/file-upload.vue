@@ -307,8 +307,6 @@ const processFile = async (file: File) => {
     
     const result = await uploadAudioFile(file)
 
-    console.log('Upload result:', result)
-
     trackData.value = result.track
     extractedMetadata.value = result.metadata
     uploadComplete.value = true
