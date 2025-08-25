@@ -227,7 +227,7 @@
             style="height: calc(100vh - 67px); min-height: 500px;"
             class="ag-theme-alpine"
             :column-defs="columnDefs"
-            :row-data="tracks"
+            :row-data="filteredTracks"
             :default-col-def="defaultColDef"
             :grid-options="gridOptions"
             @grid-ready="onGridReady"
@@ -349,6 +349,20 @@ const selectedTrackForTooltip = ref(null)
 // AG Grid
 const gridApi = ref(null)
 const columnApi = ref(null)
+
+const filteredTracks = computed(() => {
+  if (!searchQuery.value) return tracks.value
+  
+  const searchTerm = searchQuery.value.toLowerCase()
+  return tracks.value.filter(track => {
+    return (
+      (track.title?.toLowerCase() || '').includes(searchTerm) ||
+      (track.artist?.toLowerCase() || '').includes(searchTerm) ||
+      (track.album?.toLowerCase() || '').includes(searchTerm) ||
+      (track.isrc?.toLowerCase() || '').includes(searchTerm)
+    )
+  })
+})
 
 // Computed values
 const normalizedUserTier = computed(() => {
@@ -882,9 +896,7 @@ const onSelectionChanged = () => {
 }
 
 const onFilterTextBoxChanged = () => {
-  if (gridApi.value) {
-    gridApi.value.setQuickFilter(searchQuery.value)
-  }
+  // handled by AG grid via filteredTracks computed
 }
 
 const validateTrackAPI = async (trackId) => {
