@@ -134,10 +134,7 @@
       </div>
       <h3>Upload Complete!</h3>
       <div class="track-info">
-        <h4>{{ trackData.title }}</h4>
-        <p v-if="extractedMetadata?.artist">
-          by {{ extractedMetadata.artist }}
-        </p>
+        <h4>File name: {{ trackData.filename || "test" }}</h4>
         <p v-if="extractedMetadata?.duration">
           Duration: {{ formatDuration(extractedMetadata.duration) }}
         </p>
@@ -309,6 +306,8 @@ const processFile = async (file: File) => {
     showNetworkStatus.value = false
     
     const result = await uploadAudioFile(file)
+
+    console.log('Upload result:', result)
 
     trackData.value = result.track
     extractedMetadata.value = result.metadata
