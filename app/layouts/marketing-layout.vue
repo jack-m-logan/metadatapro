@@ -10,10 +10,11 @@
               to="/"
               class="flex items-center space-x-2"
             >
-              <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
-                <span class="text-white font-bold text-sm">m</span>
-              </div>
-              <span class="text-xl font-bold text-neutral-900">MetadataPRO</span>
+              <img
+                src="/logo/metadatapro-banner-orange.svg"
+                alt="MetadataPRO"
+                class="h-15"
+              >
             </NuxtLink>
           </div>
 

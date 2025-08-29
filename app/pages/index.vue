@@ -1,24 +1,23 @@
 <template>
-  <div class="landing-page relative min-h-screen bg-neutral-100">
-    <div class="absolute inset-0 z-0 overflow-hidden">
-      <div class="absolute -top-32 -left-32 w-96 h-96 bg-primary-200 rounded-full mix-blend-multiply opacity-50 filter blur-3xl animate-blob" />
-      <div class="absolute -top-16 -right-16 w-80 h-80 bg-white rounded-full mix-blend-multiply opacity-70 filter blur-3xl animate-blob animation-delay-2000" />
-      <div class="absolute -bottom-16 -right-16 w-64 h-64 bg-secondary-200 rounded-full mix-blend-multiply opacity-50 filter blur-3xl animation-delay-4000 animate-blob" />
-      <div class="absolute top-0 right-0 z-10 w-48 h-48 pattern-dots" />
-    </div>
-    
-    <section class="relative z-10 flex items-center justify-center min-h-screen">
-      <div class="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="landing-page text-sans relative min-h-screen bg-neutral-100">    
+    <section class="relative z-10 flex items-start justify-center min-h-screen">
+      <div class="absolute inset-0 z-0 overflow-hidden">
+        <!-- Blur -->
+        <!-- <CirclesBackgroundBlur /> -->
+        <!-- circles -->
+        <CirclesBackground />
+      </div>
+      <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 z-20"> 
         <div class="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 text-center">
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 mb-4 leading-tight">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-neutral-900 mb-4 leading-tight">
             Stop Losing Money to
             <br>
-            <span class="text-orange-600">
+            <span class="text-orange-600 font-heading">
               Bad Metadata
             </span>
           </h1>
 
-          <p class="text-base text-neutral-600 mb-8 max-w-xl mx-auto leading-relaxed">
+          <p class="text-base font-sans text-neutral-600 mb-8 max-w-xl mx-auto leading-relaxed">
             Poor metadata costs independent artists thousands in lost royalties and distribution rejections. MetadataPRO validates and fixes your music metadata before release.
           </p>
 
@@ -29,118 +28,8 @@
       </div>
     </section>
 
-    <!-- <template>
-  <div class="landing-page bg-gradient-to-br from-secondary-50 to-secondary-100">
-    <section class="relative overflow-hidden pb-16 pt-8">
-      <div class="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <div class="animate-fade-in">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 mt-6 mb-6">
-              Stop Losing Money to 
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary-600 to-secondary-600">
-                Bad Metadata
-              </span>
-            </h1>
-            <p class="text-xl sm:text-2xl text-neutral-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Poor metadata costs independent artists thousands in lost royalties and distribution rejections. 
-              MetadataPRO validates and fixes your music metadata before release.
-            </p>
-          </div>
-
-          <div class="animate-slide-up flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <NuxtLink 
-              to="/auth/user-signup" 
-              class="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-            >
-              Start Validating Free
-            </NuxtLink>
-          </div>
-
-          <div class="animate-fade-in">
-            <p class="text-neutral-500 mb-4">
-              Trusted by independent artists worldwide
-            </p>
-            <div class="flex justify-center items-center space-x-8 opacity-60">
-              <div class="flex items-center space-x-2">
-                <span class="text-2xl">🎵</span>
-                <span class="font-medium">0,000+ Tracks Validated</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="text-2xl">💰</span>
-                <span class="font-medium">£0k+ Royalties Protected</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section> -->
-
-    <!-- Problem/Solution Section -->
-    <section class="py-20 bg-neutral-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-          <div class="animate-fade-in">
-            <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
-              <h3 class="text-xl font-bold text-red-800 mb-4 flex items-center">
-                <span class="text-2xl mr-2">⚠️</span>
-                The Hidden Cost of Poor Metadata
-              </h3>
-              <ul class="space-y-3 text-red-700">
-                <li class="flex items-start">
-                  <span class="text-red-500 mr-2 mt-1">•</span>
-                  <span><strong>£500-£2,000 per tour</strong> in unclaimed performance royalties</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-red-500 mr-2 mt-1">•</span>
-                  <span><strong>Distribution rejections</strong> delay your release by weeks</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-red-500 mr-2 mt-1">•</span>
-                  <span><strong>Missing ISRC codes</strong> mean zero radio royalties</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-red-500 mr-2 mt-1">•</span>
-                  <span><strong>Wrong genre tags</strong> hurt streaming discoverability</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="animate-slide-up">
-            <div class="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl p-6">
-              <h3 class="text-xl font-bold text-primary-800 mb-4 flex items-center">
-                <span class="text-2xl mr-2">✅</span>
-                MetadataPRO Solution
-              </h3>
-              <ul class="space-y-3 text-primary-700">
-                <li class="flex items-start">
-                  <span class="text-primary-500 mr-2 mt-1">•</span>
-                  <span><strong>Validate metadata</strong> before submission to any distributor</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-primary-500 mr-2 mt-1">•</span>
-                  <span><strong>Fix issues automatically</strong> and download corrected files</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-primary-500 mr-2 mt-1">•</span>
-                  <span><strong>Generate ISRC codes</strong> instantly for radio/streaming</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="text-primary-500 mr-2 mt-1">•</span>
-                  <span><strong>Optimize for PRO registration</strong> (PRS, SGAE, SACEM)</span>
-                </li>
-              </ul>
-              <div class="mt-4 p-4 bg-white rounded-lg border border-primary-200">
-                <p class="text-primary-800 font-semibold">
-                  💡 Just £4.99/month - less than one Spotify playlist submission
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- Before/After Comparison Section -->
+    <BeforeAfterComparison />
 
     <!-- How It Works Section -->
     <section
@@ -899,6 +788,10 @@
 </template>
 
 <script setup>
+import BeforeAfterComparison from '/components/BeforeAfterComparison.vue'
+import CirclesBackground from '/components/CirclesBackground.vue'
+// import CirclesBackgroundBlur from '/components/CirclesBackgroundBlur.vue'
+
 definePageMeta({
   layout: 'marketing-layout'
 })
