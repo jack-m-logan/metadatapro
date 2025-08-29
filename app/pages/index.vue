@@ -1,13 +1,13 @@
 <template>
-  <div class="landing-page text-sans relative min-h-screen bg-neutral-100">    
-    <section class="relative z-10 flex items-start justify-center min-h-screen">
+  <div class="landing-page text-sans relative min-h-screen bg-neutral-100 overflow-x-hidden">
+    <section class="relative z-10 py-24 flex items-center justify-center">
       <div class="absolute inset-0 z-0 overflow-hidden">
         <CirclesBackground />
       </div>
-      <div class="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 z-20"> 
-        <div class="absolute -top-8 -right-8 z--10 w-48 h-48 pattern-dots" />
-        <div class="absolute -bottom-8 -left-8 z--10 w-48 h-48 pattern-dots" />
-    
+      <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-20"> 
+        <div class="absolute -top-12 -right-8 z--10 w-48 h-48 pattern-dots" />
+        <div class="absolute -bottom-12 -left-8 z--10 w-48 h-48 pattern-dots" />
+
         <div class="glass-card p-8 sm:p-10 text-center">
           <h1 class="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-neutral-900 mb-4 leading-tight">
             Stop Losing Money to
