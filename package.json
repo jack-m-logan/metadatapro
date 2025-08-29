@@ -18,6 +18,8 @@
   "devDependencies": {
     "@nuxt/devtools": "^2.6.2",
     "@pinia/testing": "^1.0.2",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "^24.2.1",
     "@vitejs/plugin-vue": "^6.0.1",
