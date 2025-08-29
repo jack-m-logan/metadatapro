@@ -38,10 +38,20 @@ export default defineNuxtConfig({
         }
       ],
       link: [
-        {
-          rel: 'icon',
-          type: 'image/x-icon',
-          href: '/favicon.ico',
+        { 
+          rel: 'icon', 
+          type: 'image/x-icon', 
+          href: '/favicon.ico' 
+        },
+        { 
+          rel: 'icon', 
+          type: 'image/svg+xml', 
+          href: '/favicon.svg' 
+        },
+        { 
+          rel: 'apple-touch-icon', 
+          sizes: '180x180',
+          href: '/apple-touch-icon.png' 
         },
         {
           rel: 'preconnect',
@@ -51,6 +61,10 @@ export default defineNuxtConfig({
           rel: 'preconnect',
           href: 'https://fonts.gstatic.com',
           crossorigin: ''
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap'
         }
       ],
     },
@@ -63,7 +77,8 @@ export default defineNuxtConfig({
   ],
 
   css: [
-    '~/app/assets/style/tailwind.css'
+    '~/app/assets/css/satoshi.css', 
+    '~/app/assets/css/tailwind.css'
   ],
 
   vite: {
@@ -108,11 +123,10 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/auth/user-login',
       callback: '/auth/confirm-email',
-      exclude: ['/', '/vip', '/vip/thank-you', '/auth/user-login', '/auth/user-signup', '/auth/confirm-email', '/auth/forgot-password', '/auth/reset-password']
+      exclude: ['/', '/vip', '/vip/thank-you', '/auth/user-login', '/auth/user-signup', '/auth/confirm-email', '/auth/forgot-password', '/auth/reset-password', '/font-test']
     }
   },
 
-  // Build optimization - ENHANCED
   build: {
     transpile: ['@headlessui/vue']
   },

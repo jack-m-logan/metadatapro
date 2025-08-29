@@ -59,14 +59,18 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        'sans': ['Satoshi', 'Inter', 'ui-sans-serif', 'system-ui'],
+        'heading': ['Poppins', 'ui-sans-serif', 'system-ui'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.6s ease-out',
         'bounce-light': 'bounceLight 2s infinite',
         'blob': 'blob 7s infinite',
+      },
+      animationDelay: {
+        '8000': '8s',
+        '4000': '4s',
       },
       keyframes: {
         fadeIn: {
