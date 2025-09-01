@@ -42,7 +42,7 @@
               <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                 <span class="text-neutral-600 font-medium">Title:</span>
                 <div class="flex items-center">
-                  <span class="text-neutral-900">summer song demo v3</span>
+                  <span class="text-neutral-900">summer_song</span>
                   <svg
                     class="w-4 h-4 text-red-500 ml-2"
                     fill="none"
@@ -140,9 +140,9 @@
               </div>
           
               <div class="flex items-center justify-between py-2">
-                <span class="text-neutral-600 font-medium">Sample Rate:</span>
+                <span class="text-neutral-600 font-medium">Explicit Content:</span>
                 <div class="flex items-center">
-                  <span class="text-neutral-900">22kHz</span>
+                  <span class="text-red-500 italic">Not set</span>
                   <svg
                     class="w-4 h-4 text-red-500 ml-2"
                     fill="none"
@@ -300,7 +300,7 @@
               <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                 <span class="text-neutral-600 font-medium">Release Date:</span>
                 <div class="flex items-center">
-                  <span class="text-neutral-900">2024-12-01</span>
+                  <span class="text-neutral-900">2025-12-01</span>
                   <svg
                     class="w-4 h-4 text-green-500 ml-2"
                     fill="none"
@@ -318,9 +318,9 @@
               </div>
           
               <div class="flex items-center justify-between py-2">
-                <span class="text-neutral-600 font-medium">Sample Rate:</span>
+                <span class="text-neutral-600 font-medium">Explicit Content:</span>
                 <div class="flex items-center">
-                  <span class="text-neutral-900">44.1kHz</span>
+                  <span class="text-neutral-900">Not Explicit</span>
                   <svg
                     class="w-4 h-4 text-green-500 ml-2"
                     fill="none"
@@ -354,8 +354,8 @@
         <!-- Desktop Layout -->
         <div class="hidden lg:block max-w-6xl mx-auto">
           <div class="relative grid lg:grid-cols-2 gap-8 items-center">
-            <!-- BEFORE -->
-            <div class="bg-white rounded-xl border-2 border-red-200 shadow-lg overflow-hidden animate-fade-in">
+            <!-- BEFORE card -->
+            <div class="rounded-xl border-2 border-red-200 shadow-md overflow-hidden animate-fade-in">
               <div class="bg-red-50 px-6 py-4 border-b border-red-200">
                 <div class="flex items-center">
                   <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mr-3">
@@ -378,12 +378,12 @@
                   </h3>
                 </div>
               </div>
-          
-              <div class="p-6 space-y-4">
+
+              <div class="bg-white p-6 space-y-4">
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Title:</span>
                   <div class="flex items-center">
-                    <span class="text-neutral-900">summer song demo v3</span>
+                    <span class="text-neutral-900">summer_song</span>
                     <svg
                       class="w-4 h-4 text-red-500 ml-2"
                       fill="none"
@@ -399,7 +399,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Artist:</span>
                   <div class="flex items-center">
@@ -419,7 +419,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Genre:</span>
                   <div class="flex items-center">
@@ -439,7 +439,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">ISRC:</span>
                   <div class="flex items-center">
@@ -459,7 +459,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Release Date:</span>
                   <div class="flex items-center">
@@ -479,11 +479,11 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2">
-                  <span class="text-neutral-600 font-medium">Sample Rate:</span>
+                  <span class="text-neutral-600 font-medium">Explicit Content:</span>
                   <div class="flex items-center">
-                    <span class="text-neutral-900">22kHz</span>
+                    <span class="text-red-500 italic">Not set</span>
                     <svg
                       class="w-4 h-4 text-red-500 ml-2"
                       fill="none"
@@ -500,7 +500,7 @@
                   </div>
                 </div>
               </div>
-          
+
               <div class="bg-red-50 px-6 py-4 border-t border-red-200">
                 <div class="text-center">
                   <p class="text-red-800 font-semibold text-sm">
@@ -513,7 +513,6 @@
               </div>
             </div>
 
-            <!-- Transformation Arrow (positioned absolutely for desktop) -->
             <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
               <div class="bg-primary-600 rounded-full p-4 shadow-lg">
                 <svg
@@ -532,11 +531,10 @@
               </div>
             </div>
 
-            <!-- AFTER -->
-            <div class="bg-white rounded-xl border-2 border-green-200 shadow-lg overflow-hidden animate-slide-up">
-              <div class="bg-green-50 px-6 py-4 border-b border-green-200">
+            <div class="rounded-xl border-2 border-green-300 shadow-2xl shadow-green-500/20 overflow-hidden animate-slide-up">
+              <div class="bg-gradient-to-r from-green-100 to-green-50 px-6 py-4 border-b border-green-300">
                 <div class="flex items-center">
-                  <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                  <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
                     <svg
                       class="w-5 h-5 text-white"
                       fill="none"
@@ -551,13 +549,13 @@
                       />
                     </svg>
                   </div>
-                  <h3 class="text-lg font-bold text-green-800">
+                  <h3 class="text-lg font-bold text-green-900">
                     After: MetadataPRO Fixed
                   </h3>
                 </div>
               </div>
-          
-              <div class="p-6 space-y-4">
+
+              <div class="bg-white p-6 space-y-4">
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Title:</span>
                   <div class="flex items-center">
@@ -577,7 +575,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Artist:</span>
                   <div class="flex items-center">
@@ -597,7 +595,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Genre:</span>
                   <div class="flex items-center">
@@ -617,7 +615,7 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">ISRC:</span>
                   <div class="flex items-center">
@@ -637,11 +635,11 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2 border-b border-neutral-100">
                   <span class="text-neutral-600 font-medium">Release Date:</span>
                   <div class="flex items-center">
-                    <span class="text-neutral-900">2024-12-01</span>
+                    <span class="text-neutral-900">2025-08-01</span>
                     <svg
                       class="w-4 h-4 text-green-500 ml-2"
                       fill="none"
@@ -657,11 +655,11 @@
                     </svg>
                   </div>
                 </div>
-            
+
                 <div class="flex items-center justify-between py-2">
-                  <span class="text-neutral-600 font-medium">Sample Rate:</span>
+                  <span class="text-neutral-600 font-medium">Explicit Content:</span>
                   <div class="flex items-center">
-                    <span class="text-neutral-900">44.1kHz</span>
+                    <span class="text-neutral-900">Not Explicit</span>
                     <svg
                       class="w-4 h-4 text-green-500 ml-2"
                       fill="none"
@@ -678,8 +676,8 @@
                   </div>
                 </div>
               </div>
-          
-              <div class="bg-green-50 px-6 py-4 border-t border-green-200">
+
+              <div class="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-t border-green-300">
                 <div class="text-center">
                   <p class="text-green-800 font-semibold text-sm">
                     Distribution Ready: 95/100
@@ -694,13 +692,13 @@
         </div>
 
         <!-- Value proposition -->
-        <div class="text-center mt-12 pt-8 border-t border-neutral-200">
+        <div class="text-center mt-12 pt-8 border-neutral-200">
           <div class="bg-gradient-to-r from-primary-50 to-green-50 rounded-xl p-6 max-w-2xl mx-auto">
             <h3 class="text-xl font-bold text-neutral-900 mb-2">
               Fixed in Under 60 Seconds
             </h3>
             <p class="text-neutral-600 mb-4">
-              One-click corrections that would normally take hours of manual work. 
+              One-click corrections that prevent you from leaving money on the table. 
               Download your distribution-ready file instantly.
             </p>
             <div class="flex items-center justify-center space-x-6 text-sm text-neutral-600">
