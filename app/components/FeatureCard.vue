@@ -10,11 +10,11 @@
         </span>
       </div>
 
-      <!-- Icon -->
       <div 
         class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 relative z-10"
         :class="iconColor"
       >
+        <!-- TODO replace with icon library -->
         <div v-html="icon" />
       </div>
 
