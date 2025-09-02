@@ -8,8 +8,8 @@
     </div>
     
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-20">
-      <div class="absolute -top-12 -right-8 z--10 w-48 h-48 pattern-dots" />
-      <div class="absolute -bottom-12 -left-8 z--10 w-48 h-48 pattern-dots" />
+      <div class="absolute -bottom-12 -right-8 z--10 w-48 h-48 pattern-dots" />
+      <div class="absolute -top-12 -left-8 z--10 w-48 h-48 pattern-dots" />
 
       <div class="glass-card p-8 sm:p-10">
         <div class="text-center mb-12">

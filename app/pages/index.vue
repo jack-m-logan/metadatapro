@@ -21,9 +21,12 @@
             Poor metadata costs independent artists thousands in lost royalties and distribution rejections. MetadataPRO validates and fixes your music metadata before release.
           </p>
 
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-xl transition-all duration-200 transform hover:scale-105">
+          <NuxtLink 
+            to="/auth/user-signup" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
             Start Validating Free
-          </button>
+          </NuxtLink>
         </div>
       </div>
     </section>
@@ -38,382 +41,10 @@
     <HowItWorks />
 
     <!-- Pricing Section -->
-    <section
-      id="pricing"
-      class="py-20 bg-neutral-50"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">
-            Simple, Transparent Pricing
-          </h2>
-          <p class="text-xl text-neutral-600">
-            Pay for what you need. Upgrade as you grow.
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <!-- Free Tier -->
-          <div class="bg-white rounded-xl shadow-lg p-8 border border-neutral-200">
-            <div class="text-center">
-              <h3 class="text-2xl font-bold text-neutral-900 mb-2">
-                Free
-              </h3>
-              <div class="mb-6">
-                <span class="text-4xl font-bold text-neutral-900">£0</span>
-                <span class="text-neutral-600">/month</span>
-              </div>
-            </div>
-            
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>3 validations per month</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>3 corrections per month</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Basic validation reports</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Email support</span>
-              </li>
-            </ul>
-
-            <NuxtLink 
-              to="/auth/user-signup" 
-              class="w-full bg-neutral-600 hover:bg-neutral-700 text-white py-3 px-6 rounded-lg font-semibold text-center block transition-colors"
-            >
-              Get Started Free
-            </NuxtLink>
-          </div>
-
-          <!-- Pro Artist - Most Popular -->
-          <div class="bg-white rounded-xl shadow-xl p-8 border-2 border-primary-600 relative">
-            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <span class="bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                Most Popular
-              </span>
-            </div>
-            
-            <div class="text-center">
-              <h3 class="text-2xl font-bold text-neutral-900 mb-2">
-                Pro Artist
-              </h3>
-              <div class="mb-6">
-                <span class="text-4xl font-bold text-primary-600">£4.99</span>
-                <span class="text-neutral-600">/month</span>
-              </div>
-            </div>
-            
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span><strong>Unlimited</strong> validations & corrections</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>ISRC code generation</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>PRO registration assistance</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Revenue impact calculator</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Priority support</span>
-              </li>
-            </ul>
-
-            <NuxtLink 
-              to="/auth/user-signup" 
-              class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-semibold text-center block transition-colors"
-            >
-              Start Pro Trial
-            </NuxtLink>
-          </div>
-
-          <!-- Pro Label -->
-          <div class="bg-white rounded-xl shadow-lg p-8 border border-neutral-200">
-            <div class="text-center">
-              <h3 class="text-2xl font-bold text-neutral-900 mb-2">
-                Pro Label
-              </h3>
-              <div class="mb-6">
-                <span class="text-4xl font-bold text-neutral-900">£14.99</span>
-                <span class="text-neutral-600">/month</span>
-              </div>
-            </div>
-            
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span><strong>Everything in Pro Artist</strong></span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Unlimited artist management</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Bulk operations & batch processing</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Portfolio analytics dashboard</span>
-              </li>
-              <li class="flex items-center">
-                <svg
-                  class="w-5 h-5 text-green-500 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Advanced reporting & exports</span>
-              </li>
-            </ul>
-
-            <NuxtLink 
-              to="/auth/user-signup" 
-              class="w-full bg-secondary-600 hover:bg-secondary-700 text-white py-3 px-6 rounded-lg font-semibold text-center block transition-colors"
-            >
-              Start Label Trial
-            </NuxtLink>
-          </div>
-        </div>
-
-        <div class="mt-12 text-center">
-          <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6 max-w-2xl mx-auto">
-            <h3 class="text-xl font-bold text-neutral-900 mb-2">
-              💡 VIP Beta Program
-            </h3>
-            <p class="text-neutral-600 mb-4">
-              Get 6 months of Pro features free in exchange for feedback sessions. 
-              Help shape the future of metadata management.
-            </p>
-            <p class="text-sm text-neutral-500">
-              Limited spots available • By invitation only
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Demo Section -->
-    <section
-      id="demo"
-      class="py-20 bg-white"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">
-            See MetadataPRO in Action
-          </h2>
-          <p class="text-xl text-neutral-600">
-            Watch how easy it is to validate and fix your metadata
-          </p>
-        </div>
-
-        <div class="max-w-4xl mx-auto">
-          <div class="bg-neutral-100 rounded-xl aspect-video flex items-center justify-center">
-            <div class="text-center">
-              <div class="w-24 h-24 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  class="w-12 h-12 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-              <h3 class="text-xl font-bold text-neutral-900 mb-2">
-                2-Minute Demo
-              </h3>
-              <p class="text-neutral-600">
-                Upload → Validate → Fix → Download
-              </p>
-              <button class="mt-4 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                Play Demo
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <PricingSection id="pricing" />
 
     <!-- Testimonials Section -->
-    <section class="py-20 bg-neutral-50">
+    <!-- <section class="py-20 bg-neutral-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">
@@ -492,16 +123,16 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- CTA Section -->
-    <section class="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+    <section class="py-20 bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl sm:text-4xl font-bold mb-4">
           Stop Losing Money to Bad Metadata
         </h2>
         <p class="text-xl mb-8 opacity-90">
-          Join thousands of independent artists who trust MetadataPRO to protect their royalties
+          Sign up for your free account and see how MetadataPRO can prevent distribution rejections, save you time, and maximize your royalty collection.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <NuxtLink 
@@ -518,7 +149,7 @@
           </button>
         </div>
         <p class="text-sm opacity-75 mt-4">
-          No credit card required • 3 free validations • Cancel anytime
+          No credit card required • 5 free validations • Cancel anytime
         </p>
       </div>
     </section>
@@ -530,7 +161,7 @@ import BeforeAfterComparison from '/components/BeforeAfterComparison.vue'
 import CirclesBackground from '/components/CirclesBackground.vue'
 import HowItWorks from '/components/HowItWorks.vue'
 import FeaturesSection from '/components/FeaturesSection.vue'
-// import CirclesBackgroundBlur from '/components/CirclesBackgroundBlur.vue'
+import PricingSection from '/components/PricingSection.vue'
 
 definePageMeta({
   layout: 'marketing-layout'

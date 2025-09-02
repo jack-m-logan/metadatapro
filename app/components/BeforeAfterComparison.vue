@@ -698,8 +698,12 @@
               Fixed in Under 60 Seconds
             </h3>
             <p class="text-neutral-600 mb-4">
-              One-click corrections that prevent you from leaving money on the table. 
-              Download your distribution-ready file instantly.
+              We ensure your metadata meets the requirements of all major distributors by using DDEX standards.
+              By filling in over 100+ metadata fields correctly, we enhance your distribution process and improve your discoverability.
+            </p>
+            <p class="text-neutral-600 mb-4">
+              One-click corrections prevent you from leaving money on the table, and enhanced metadata boosts your chances of getting playlisted.
+              Download your corrected, distribution-ready files instantly.
             </p>
             <div class="flex items-center justify-center space-x-6 text-sm text-neutral-600">
               <div class="flex items-center">
