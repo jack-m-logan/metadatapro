@@ -302,7 +302,7 @@ import { AgGridVue } from 'ag-grid-vue3'
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
-import Toast from '/components/toast-messages.vue'
+import Toast from '/components/ToastMessages.vue'
 import ArtistValidationBanner from '/components/ArtistValidationBanner.vue'
 import ValidationTooltip from '/components/ValidationTooltip.vue'
 

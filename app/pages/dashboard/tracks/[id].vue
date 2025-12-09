@@ -177,8 +177,8 @@
 </template>
 
 <script setup>
-import ValidationResults from '/components/validation-results.vue'
-import Toast from '/components/toast-messages.vue'
+import ValidationResults from '/components/ValidationResults.vue'
+import Toast from '/components/ToastMessages.vue'
 
 definePageMeta({
   middleware: 'auth'

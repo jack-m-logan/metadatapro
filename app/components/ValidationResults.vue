@@ -1,5 +1,5 @@
 <template>
-  <div class="validation-results">
+  <div class="ValidationResults">
     <!-- Header -->
     <div class="bg-white shadow rounded-lg mb-6">
       <div class="px-6 py-4 border-b border-gray-200">

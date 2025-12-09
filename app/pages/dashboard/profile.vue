@@ -655,8 +655,8 @@
 </template>
 
 <script setup lang="ts">
-import Toast from '/components/toast-messages.vue'
-import SidebarNavigation from '/components/sidebar-navigation.vue'
+import Toast from '/components/ToastMessages.vue'
+import SidebarNavigation from '/components/SidebarNavigation.vue'
 import ArtistAliasForm from '/components/ArtistAliasForm.vue'
 
 definePageMeta({
