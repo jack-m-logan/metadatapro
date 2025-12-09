@@ -238,7 +238,7 @@ const retry = () => {
 }
 
 const reportError = () => {
-  const subject = encodeURIComponent('Error Report - MetaPro App')
+  const subject = encodeURIComponent('Error Report - MetadataPRO App')
   const body = encodeURIComponent(`
 Error Details:
 - Message: ${error.value?.message || 'Unknown error'}
@@ -251,7 +251,7 @@ Please describe what you were doing when this error occurred:
 [Your description here]
   `)
   
-  window.open(`mailto:support@metapro.app?subject=${subject}&body=${body}`)
+  window.open(`mailto:support@MetadataPRO.app?subject=${subject}&body=${body}`)
 }
 
 onMounted(() => {

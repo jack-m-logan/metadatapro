@@ -42,7 +42,7 @@
 const props = defineProps({
   title: {
     type: String,
-    default: 'metaPRO Dashboard'
+    default: 'MetadataPRO Dashboard'
   },
   backLink: {
     type: String,

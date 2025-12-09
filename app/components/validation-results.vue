@@ -419,7 +419,7 @@ const getRevenueImpactMessage = (score, issues) => {
   const criticalIssues = issues?.filter(i => i.severity === 'critical').length || 0
 
   if (missingISRC) {
-    return 'Missing ISRC could cost you €50-200 per month in radio royalties.'
+    return 'Missing ISRC could cost you £50-200 per month in royalties.'
   }
 
   if (criticalIssues > 0) {

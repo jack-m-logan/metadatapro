@@ -239,7 +239,7 @@
         <AlertBanner
           v-if="revenueImpact.potentialValue > 0"
           type="warning"
-          :title="`Potential Revenue Impact: €${revenueImpact.potentialValue}/month`"
+          :title="`Potential Revenue Impact: £${revenueImpact.potentialValue}/month`"
           :message="revenueImpactMessage"
           action-text="⭐ Fix All Issues (Pro Feature)"
           class="mt-6"

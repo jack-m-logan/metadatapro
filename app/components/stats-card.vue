@@ -80,7 +80,7 @@ const formattedValue = computed(() => {
     case 'percentage':
       return `${value}%`
     case 'currency':
-      return `€${value}`
+      return `£${value}`
     case 'text':
       return String(value)
     case 'number':

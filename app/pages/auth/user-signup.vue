@@ -3,7 +3,7 @@
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your metaPRO account
+          Create your MetadataPRO account
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
           Start validating your music metadata today
