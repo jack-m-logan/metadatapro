@@ -1,4 +1,7 @@
 # MetadataPRO Development Setup & Documentation
+
+MVP for a music metadata validation service, enabling independent artists and record labels to compile, improve and maintain the metadata for their tracks with the aim of increasing discoverability and preventing bottlenecks during release cycles. 
+
 ## Prerequisites
 The scaffolding of the project is cloned from https://github.com/lazercaveman/nuxt-starter.
 
